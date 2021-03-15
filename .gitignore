@@ -46,4 +46,4 @@ app.*.map.json
 /android/app/release
 
 # Ignore .env files
-./lib/assets/*.env
+/lib/assets/env/*.env
