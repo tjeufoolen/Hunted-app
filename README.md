@@ -3,6 +3,10 @@
 A new Flutter project.
 
 ## Getting Started
+1. Clone this repository.
+2. Setup API/DB from [HuntedAPI](https://github.com/tjeufoolen/Hunted-api)
+3. Create a .env from the .env.example and fill in the fields.
+4. Enjoy! :tada:
 
 This project is a starting point for a Flutter application.
 
