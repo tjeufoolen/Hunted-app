@@ -1,21 +1,35 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
-import '../models/prototype.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class DataService {
-  Future<Prototype> fetchPrototypes() async {
-    final response =
-        // await http.get(Uri.https(FlutterConfig.get('API_URL'), '/21'));
-        // await http.get(Uri.https('hunted-api.herokuapp.com', '/21'));
-        await http.get(Uri.https(env["API_URL"], '/11'));
-    Prototype prototype;
+import '../exceptions/HTTPResponseException.dart';
 
-    if (response.statusCode == 200) {
-      prototype = (Prototype.fromJson(json.decode(response.body)));
+abstract class DataService<T> {
+  final String url = env['API_URL'];
+  final String genericEndpoint;
+
+  DataService({this.genericEndpoint});
+
+  T getAll() {
+    executeRequest().then((value) => convertArray(json.decode(value)));
+    return null;
+  }
+
+  T convert(Map<String, dynamic> json);
+  T convertArray(Map<String, dynamic> json);
+
+  Future<String> executeRequest({String endpoint = ""}) async {
+    final response = await http.get(createRequestUri(endpoint));
+
+    if ([200, 201, 202, 204].contains(response.statusCode)) {
+      return response.body;
     } else {
-      throw Exception('Failed to load prototypes');
+      throw HTTPResponseException(response.statusCode, response.body);
     }
-    return prototype;
+  }
+
+  Uri createRequestUri(String endpoint) {
+    return Uri.parse(env['API_URL'] + genericEndpoint + endpoint);
   }
 }
