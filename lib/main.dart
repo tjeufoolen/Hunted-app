@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hunted_app/models/Prototype.dart';
+import 'package:hunted_app/services/AuthDataService.dart';
 import 'package:hunted_app/services/DataService.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
+
+import 'models/Player.dart';
 
 Future main() async {
   await DotEnv.load(fileName: ".env");
@@ -31,12 +34,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<Prototype> prototype;
+  Future<Player> prototype;
 
   @override
   void initState() {
     super.initState();
-    prototype = DataService().fetchPrototypes();
+    prototype = AuthDataService()
+        .joinGame('67477-15e87-46818-a097e-aba3c-2aab4-02c53-1f2aa');
   }
 
   @override
@@ -46,7 +50,26 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Text("Hello, World!"),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            FutureBuilder<Player>(
+                future: prototype,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Column(children: [
+                      Text(snapshot.data.id.toString()),
+                      Text(snapshot.data.code),
+                      Text(snapshot.data.playerRole.toString()),
+                    ]);
+                  } else if (snapshot.hasError) {
+                    return Text("${snapshot.error}");
+                  } else {
+                    return Text("No data and no error!?");
+                  }
+                })
+          ],
+        ),
       ),
     );
   }

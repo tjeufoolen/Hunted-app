@@ -11,15 +11,19 @@ abstract class DataService<T> {
 
   DataService({this.genericEndpoint});
 
-  T getAll() {
-    executeRequest().then((value) => convertArray(json.decode(value)));
-    return null;
+  Future<T> get(int id) async {
+    return executeRequest(endpoint: "/$id")
+        .then((value) => convert(json.decode(value)));
+  }
+
+  Future<T> getAll() {
+    return executeRequest().then((value) => convertArray(json.decode(value)));
   }
 
   T convert(Map<String, dynamic> json);
   T convertArray(Map<String, dynamic> json);
 
-  Future<String> executeRequest({String endpoint = ""}) async {
+  Future<String> executeRequest({String endpoint: ''}) async {
     final response = await http.get(createRequestUri(endpoint));
 
     if ([200, 201, 202, 204].contains(response.statusCode)) {
