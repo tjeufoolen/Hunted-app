@@ -8,4 +8,6 @@ class Game {
       id: json['id'],
     );
   }
+
+  Map<String, dynamic> toJson() => {'id': id};
 }

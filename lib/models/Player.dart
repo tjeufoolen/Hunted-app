@@ -31,4 +31,13 @@ class Player {
         outOfTheGame: json['outOfTheGame'],
         location: Location.fromJson(json['location']));
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'game': game.toJson(),
+        'code': code,
+        'playerRole': playerRole,
+        'outOfTheGame': outOfTheGame,
+        'location': location.toJson()
+      };
 }

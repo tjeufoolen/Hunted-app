@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hunted_app/models/HttpError.dart';
 
 import '../exceptions/HTTPResponseException.dart';
 
@@ -29,7 +30,9 @@ abstract class DataService<T> {
     if ([200, 201, 202, 204].contains(response.statusCode)) {
       return response.body;
     } else {
-      throw HTTPResponseException(response.statusCode, response.body);
+      final error = HttpError.fromJson(json.decode(response.body));
+      return Future.error(
+          HTTPResponseException(response.statusCode, error.message));
     }
   }
 

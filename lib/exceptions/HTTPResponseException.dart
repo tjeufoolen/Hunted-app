@@ -1,6 +1,6 @@
 class HTTPResponseException implements Exception {
   final int statusCode;
-  final String error;
+  final String message;
 
-  HTTPResponseException(this.statusCode, this.error);
+  HTTPResponseException(this.statusCode, this.message);
 }
