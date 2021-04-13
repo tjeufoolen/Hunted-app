@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:hunted_app/models/Player.dart';
-import 'package:hunted_app/models/game.dart';
 import 'package:hunted_app/services/dataservice.dart';
 
 class AuthDataService extends DataService<Player> {
