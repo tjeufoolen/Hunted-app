@@ -38,6 +38,8 @@ class _LoginController extends State<Login> {
     //
     // Navigate to game lobby
 
+    // Navigator.pushReplacementNamed(context, '/home');
+
     print(joinedAsPlayer.game);
   }
 
