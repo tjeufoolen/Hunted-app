@@ -19,7 +19,6 @@ class AuthDataService extends DataService<Player> {
 
   @override
   convertArray(Map<String, dynamic> json) {
-    // TODO: implement convertArray
-    throw UnimplementedError();
+    return null;
   }
 }
