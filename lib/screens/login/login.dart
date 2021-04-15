@@ -48,10 +48,6 @@ class _LoginController extends State<Login> {
   void handleSuccessfulLogin(Player joinedAsPlayer) async {
     FlutterSession().set("LoggedInPlayer", joinedAsPlayer).then((value) {
       // The game has already started, navigate to game
-      // TODO: REMOVE THIS
-      print(joinedAsPlayer.game.startAt.toUtc().toIso8601String());
-      print(DateTime.now().toUtc().toIso8601String());
-
       if (joinedAsPlayer.game.startAt
           .toUtc()
           .isBefore(DateTime.now().toUtc())) {

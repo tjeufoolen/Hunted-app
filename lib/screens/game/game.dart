@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:flutter_session/flutter_session.dart';
@@ -15,7 +16,9 @@ class Game extends StatefulWidget {
 class _GameController extends State<Game> {
   Widget build(BuildContext context) => _GameView(this);
   Player loggedInPlayer;
+
   int countdownEnd = 0;
+  CountdownTimerController countdownController;
 
   @override
   void initState() {
@@ -27,11 +30,15 @@ class _GameController extends State<Game> {
         countdownEnd = loggedInPlayer.game.startAt
             .add(Duration(minutes: loggedInPlayer.game.minutes))
             .millisecondsSinceEpoch;
+        countdownController =
+            CountdownTimerController(endTime: countdownEnd, onEnd: _endGame);
       });
     });
   }
 
-  void endGame() {}
+  void _endGame() {
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   Future<Player> _loadPlayer() async {
     return Player.fromJson(await FlutterSession().get("LoggedInPlayer"));
@@ -59,8 +66,8 @@ class _GameView extends WidgetView<Game, _GameController> {
             Text("game ${state?.loggedInPlayer?.game?.id?.toString() ?? ''}"),
         actions: [
           CountdownTimer(
-            onEnd: state.endGame,
             endTime: state.countdownEnd,
+            controller: state.countdownController,
             widgetBuilder: (_, CurrentRemainingTime time) {
               if (time == null) {
                 return Text("");
@@ -68,7 +75,7 @@ class _GameView extends WidgetView<Game, _GameController> {
               return Center(
                 child: Text(
                   "${_formatNumber(time.hours)} : ${_formatNumber(time.min)} : ${_formatNumber(time.sec)}  ",
-                  style: TextStyle(fontSize: 22),
+                  style: TextStyle(fontSize: 18),
                 ),
               );
             },
