@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_session/flutter_session.dart';
+
 import 'package:hunted_app/exceptions/HTTPResponseException.dart';
 import 'package:hunted_app/models/Player.dart';
 import 'package:hunted_app/services/AuthDataService.dart';
@@ -25,22 +27,20 @@ class _LoginController extends State<Login> {
 
   void handleLoginPressed() async {
     if (_formKey.currentState.validate()) {
-      authService
-          .joinGame(currentInviteCode)
-          .then((value) => handleSuccessfulLogin(value))
-          .catchError((e) => handleFailedLogin(e.message),
-              test: (e) => e is HTTPResponseException);
+      authService.joinGame(currentInviteCode).then((value) async {
+        handleSuccessfulLogin(value);
+      }).catchError((e) => handleFailedLogin(e.message),
+          test: (e) => e is HTTPResponseException);
     }
   }
 
-  void handleSuccessfulLogin(Player joinedAsPlayer) {
-    // Set user in localpreferences
-    //
-    // Navigate to game lobby
+  void handleSuccessfulLogin(Player joinedAsPlayer) async {
+    await FlutterSession().set("LoggedInPlayer", joinedAsPlayer);
+    print(Player.fromJson(await FlutterSession().get("LoggedInPlayer")));
 
     // Navigator.pushReplacementNamed(context, '/home');
 
-    print(joinedAsPlayer.game);
+    // print(joinedAsPlayer.game);
   }
 
   void handleFailedLogin(String error) {
@@ -91,9 +91,10 @@ class _LoginView extends WidgetView<Login, _LoginController> {
                   padding: const EdgeInsets.only(top: 20.0),
                   child: Center(
                     child: Container(
-                        width: 200,
-                        height: 150,
-                        child: Image.asset('assets/images/flutter-logo.png')),
+                      width: 200,
+                      height: 150,
+                      child: Image.asset('assets/images/flutter-logo.png'),
+                    ),
                   ),
                 ),
                 Padding(
@@ -113,8 +114,9 @@ class _LoginView extends WidgetView<Login, _LoginController> {
                   height: 50,
                   width: 250,
                   decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(20)),
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: TextButton(
                     onPressed: () {
                       state.handleLoginPressed();

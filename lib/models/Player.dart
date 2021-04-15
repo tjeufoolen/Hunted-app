@@ -38,6 +38,6 @@ class Player {
         'code': code,
         'playerRole': playerRole,
         'outOfTheGame': outOfTheGame,
-        'location': location.toJson()
+        'location': location?.toJson()
       };
 }
