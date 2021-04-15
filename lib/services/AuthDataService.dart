@@ -7,8 +7,10 @@ class AuthDataService extends DataService<Player> {
   AuthDataService() : super(genericEndpoint: '');
 
   Future<Player> joinGame(String code) async {
-    return executeRequest(endpoint: "/join/$code")
-        .then((value) => convert(json.decode(value)));
+    return executeRequest(endpoint: "/join/$code").then((value) {
+      var player = convert(json.decode(value));
+      return player;
+    });
   }
 
   @override
