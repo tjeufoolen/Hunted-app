@@ -7,7 +7,8 @@ class AuthDataService extends DataService<Player> {
   AuthDataService() : super(genericEndpoint: '');
 
   Future<Player> joinGame(String code) async {
-    return executeRequest(endpoint: "/join/$code").then((value) {
+    return executeRequest(http_methods.POST,
+        endpoint: "/join", content: {'code': code}).then((value) {
       var player = convert(json.decode(value));
       return player;
     });

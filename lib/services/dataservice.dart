@@ -10,29 +10,82 @@ abstract class DataService<T> {
   final String url = env['API_URL'];
   final String genericEndpoint;
 
+  final Map<String, String> _jsonHeaders = {
+    'Content-Type': 'application/json; charset=UTF-8'
+  };
+
   DataService({this.genericEndpoint});
 
   Future<T> get(int id) async {
-    return executeRequest(endpoint: "/$id")
+    return executeRequest(http_methods.GET, endpoint: "/$id")
         .then((value) => convert(json.decode(value)));
   }
 
   Future<T> getAll() {
-    return executeRequest().then((value) => convertArray(json.decode(value)));
+    return executeRequest(http_methods.GET)
+        .then((value) => convertArray(json.decode(value)));
   }
 
   T convert(Map<String, dynamic> json);
   T convertArray(Map<String, dynamic> json);
 
-  Future<String> executeRequest({String endpoint: ''}) async {
-    final response = await http.get(createRequestUri(endpoint));
+  Future<String> executeRequest(http_methods method,
+      {String endpoint: '', Map<String, dynamic> content}) async {
+    var response;
+
+    switch (method) {
+      case http_methods.GET:
+        {
+          response = await http.get(createRequestUri(endpoint));
+        }
+        break;
+
+      case http_methods.POST:
+        {
+          if (content == null)
+            throw Exception(
+                "Argument Exception: executeRequest with post method requires content body to be set.");
+
+          var body = jsonEncode(content);
+          response = await http.post(createRequestUri(endpoint),
+              headers: _jsonHeaders, body: body);
+        }
+        break;
+
+      case http_methods.PUT:
+        {
+          if (content == null)
+            throw Exception(
+                "Argument Exception: executeRequest with put method requires content body to be set.");
+          response = await http.put(createRequestUri(endpoint),
+              headers: _jsonHeaders, body: jsonEncode(content));
+        }
+        break;
+
+      case http_methods.PATCH:
+        {
+          if (content == null)
+            throw Exception(
+                "Argument Exception: executeRequest with patch method requires content body to be set.");
+          response = await http.patch(createRequestUri(endpoint),
+              headers: _jsonHeaders, body: jsonEncode(content));
+        }
+        break;
+
+      case http_methods.DELETE:
+        {
+          response = await http.delete(createRequestUri(endpoint));
+        }
+        break;
+    }
 
     if ([200, 201, 202, 204].contains(response.statusCode)) {
       return response.body;
     } else {
       final error = HttpError.fromJson(json.decode(response.body));
       return Future.error(
-          HTTPResponseException(response.statusCode, error.message));
+        HTTPResponseException(response.statusCode, error.message),
+      );
     }
   }
 
@@ -40,3 +93,5 @@ abstract class DataService<T> {
     return Uri.parse(env['API_URL'] + genericEndpoint + endpoint);
   }
 }
+
+enum http_methods { GET, POST, PUT, PATCH, DELETE }
