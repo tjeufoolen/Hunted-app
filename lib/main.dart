@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
+import 'package:flutter/services.dart';
 import 'package:hunted_app/screens/game/game.dart';
 import 'package:hunted_app/screens/lobby/lobby.dart';
+import 'package:flutter_config/flutter_config.dart';
 
 import 'package:hunted_app/screens/login/login.dart';
 
 Future main() async {
-  await DotEnv.load(fileName: ".env");
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterConfig.loadEnvVariables();
+  await SystemChrome.setPreferredOrientations(
+    [DeviceOrientation.portraitUp],
+  );
+
   runApp(MyApp());
 }
 

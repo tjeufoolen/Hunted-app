@@ -71,6 +71,7 @@ class _GameMapController extends State<GameMap> {
     });
   }
 
+  // Moves the camera to the current location of the player
   void moveCameraToCurrentLocation() {
     _controller.animateCamera(
       CameraUpdate.newCameraPosition(
