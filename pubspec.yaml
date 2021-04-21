@@ -54,8 +54,6 @@ flutter:
     - assets/images/
     - assets/images/map-markers/police_marker.png
     - assets/styles/
-    # - assets/images/
-    # - assets/styles/light-map.json
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
