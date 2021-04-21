@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:flutter_session/flutter_session.dart';
+
 import 'package:hunted_app/models/Player.dart';
+import 'package:hunted_app/widgets/MapWidgets/GameMap.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
 
 // Widget
@@ -83,10 +86,7 @@ class _GameView extends WidgetView<Game, _GameController> {
         ],
       ),
       body: Center(
-        child: Text(
-          "Game ${state?.loggedInPlayer?.game?.id?.toString() ?? ''}",
-          style: TextStyle(fontSize: 48),
-        ),
+        child: GameMap(),
       ),
     );
   }
