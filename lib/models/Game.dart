@@ -14,16 +14,15 @@ class Game {
         id: json['id'],
         startAt: DateTime.parse(json['startAt']),
         minutes: json['minutes'],
-        gameLocations: (convert.json.decode(json['gameLocations']))
-            .map((i) => GameLocation.fromJson(i))
-            .toList());
+        gameLocations: List<GameLocation>.from(json["gameLocations"]
+            .toList()
+            .map((data) => GameLocation.fromJson(data))));
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'startAt': startAt.toIso8601String(),
         'minutes': minutes,
-        'gameLocations': convert.json
-            .encode(List<dynamic>.from(gameLocations.map((i) => i.toJson())))
+        'gameLocations': gameLocations.map((obj) => obj.toJson()).toList()
       };
 }

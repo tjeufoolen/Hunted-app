@@ -22,6 +22,6 @@ class GameLocation {
         'id': id,
         'name': name,
         'location': location.toJson(),
-        'locationType': locationType.index
+        'type': locationType.index
       };
 }
