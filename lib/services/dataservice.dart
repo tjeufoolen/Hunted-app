@@ -1,13 +1,13 @@
 import 'dart:convert';
 
+import 'package:flutter_config/flutter_config.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hunted_app/models/HttpError.dart';
 
 import '../exceptions/HTTPResponseException.dart';
 
 abstract class DataService<T> {
-  final String url = env['API_URL'];
+  final String url = FlutterConfig.get('API_URL');
   final String genericEndpoint;
 
   final Map<String, String> _jsonHeaders = {
@@ -90,7 +90,7 @@ abstract class DataService<T> {
   }
 
   Uri createRequestUri(String endpoint) {
-    return Uri.parse(env['API_URL'] + genericEndpoint + endpoint);
+    return Uri.parse(url + genericEndpoint + endpoint);
   }
 }
 

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:location/location.dart';
 
 import 'package:hunted_app/exceptions/HTTPResponseException.dart';
 import 'package:hunted_app/models/Player.dart';
@@ -50,18 +51,26 @@ class _LoginController extends State<Login> {
 
   void handleLoginPressed() async {
     if (_formKey.currentState.validate()) {
-      authService.joinGame(currentInviteCode).then((value) async {
-        var gameEnd =
-            value.game.startAt.add(Duration(minutes: value.game.minutes));
+      bool hasLocationAccess = await handleLocationPermissions();
 
-        if (gameEnd.isBefore(DateTime.now())) {
-          handleFailedLogin("Game already ended");
-          return;
-        }
+      if (hasLocationAccess) {
+        authService.joinGame(currentInviteCode).then((value) async {
+          var gameEnd =
+              value.game.startAt.add(Duration(minutes: value.game.minutes));
 
-        handleSuccessfulLogin(value);
-      }).catchError((e) => handleFailedLogin(e.message),
-          test: (e) => e is HTTPResponseException);
+          if (gameEnd.isBefore(DateTime.now())) {
+            handleFailedLogin("Game already ended");
+            return;
+          }
+
+          handleSuccessfulLogin(value);
+        }).catchError((e) => handleFailedLogin(e.message),
+            test: (e) => e is HTTPResponseException);
+        return;
+      }
+
+      handleFailedLogin(
+          "This application requires location permissions to function. Please enable location permissions on this device in order to continue.");
     }
   }
 
@@ -95,6 +104,16 @@ class _LoginController extends State<Login> {
             ],
           );
         });
+  }
+
+  Future<bool> handleLocationPermissions() async {
+    Location _location = Location();
+
+    if (await _location.hasPermission() == PermissionStatus.GRANTED) {
+      return true;
+    }
+
+    return await _location.requestPermission() == PermissionStatus.GRANTED;
   }
 
   String validateInviteToken(String value) {
