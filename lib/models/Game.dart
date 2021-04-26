@@ -1,5 +1,4 @@
 import 'package:hunted_app/models/GameLocation.dart';
-import 'dart:convert' as convert;
 
 class Game {
   final int id;

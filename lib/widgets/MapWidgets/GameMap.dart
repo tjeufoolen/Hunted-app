@@ -1,7 +1,3 @@
-import 'dart:async';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -23,7 +19,19 @@ class GameMap extends StatefulWidget {
 // Controller
 class _GameMapController extends State<GameMap> {
   @override
-  Widget build(BuildContext context) => _GameMapView(this);
+  Widget build(BuildContext context) {
+    if (widget?.loggedInPlayer?.game?.gameLocations != null) {
+      MarkerFactory()
+          .createAll(widget.loggedInPlayer.game.gameLocations)
+          .then((value) {
+        setState(() {
+          _markers = value.toSet();
+        });
+      });
+    }
+
+    return _GameMapView(this);
+  }
 
   String _mapStyle;
   GoogleMapController _controller;
@@ -46,16 +54,6 @@ class _GameMapController extends State<GameMap> {
         .getImage('map-markers/police_marker.png', 75)
         .then((value) => pinIcon = value);
 
-    if (widget?.loggedInPlayer?.game?.gameLocations != null) {
-      MarkerFactory()
-          .createAll(widget.loggedInPlayer.game.gameLocations)
-          .then((value) {
-        setState(() {
-          _markers = value.toSet();
-        });
-      });
-    }
-
     super.initState();
   }
 
@@ -63,8 +61,6 @@ class _GameMapController extends State<GameMap> {
     _controller = mapController;
     _controller.setMapStyle(_mapStyle);
 
-    // addPin();
-    //
     _location.getLocation().then((newLocation) {
       _playerPosition = LatLng(newLocation.latitude, newLocation.longitude);
       moveCameraToCurrentLocation();
@@ -72,16 +68,6 @@ class _GameMapController extends State<GameMap> {
 
     _location.onLocationChanged().listen((LocationData newLocation) {
       _playerPosition = LatLng(newLocation.latitude, newLocation.longitude);
-    });
-  }
-
-  void addPin() {
-    LatLng pinPosition = LatLng(51.525349, 5.483690);
-    setState(() {
-      _markers.add(Marker(
-          markerId: MarkerId('example ID'),
-          position: pinPosition,
-          icon: pinIcon));
     });
   }
 

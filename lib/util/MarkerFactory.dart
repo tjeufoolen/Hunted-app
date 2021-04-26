@@ -39,19 +39,10 @@ class MarkerFactory {
   }
 
   Future<List<CustomMarker>> createAll(List<GameLocation> locations) async {
-    // List<CustomMarker> list = [];
-
-    // await Future.forEach(locations, (e) async {
-    //   list.add(await this.create(
-    //       e.locationType, LatLng(e.location.latitude, e.location.longitude)));
-    // });
-
     return Stream.fromIterable(locations)
         .asyncMap((e) => this.create(
             e.locationType, LatLng(e.location.latitude, e.location.longitude)))
         .toList();
-
-    // return list;
   }
 
   factory MarkerFactory() {
