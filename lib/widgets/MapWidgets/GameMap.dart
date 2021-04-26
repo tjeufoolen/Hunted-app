@@ -36,11 +36,9 @@ class _GameMapController extends State<GameMap> {
         .then((value) => _mapStyle = value);
 
     // Load the icon from storage
-    ImageHelper.getBytesFromAsset(
-            rootBundle, 'assets/images/map-markers/police_marker.png', 75)
-        .then((value) {
-      pinIcon = BitmapDescriptor.fromBytes(value);
-    });
+    ImageHelper()
+        .getImage('map-markers/police_marker.png', 75)
+        .then((value) => pinIcon = value);
 
     super.initState();
   }
