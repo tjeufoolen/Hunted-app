@@ -41,6 +41,7 @@ class ImageHelper {
   factory ImageHelper() {
     return _instance;
   }
+
   ImageHelper._internal() {
     _images = Map();
   }

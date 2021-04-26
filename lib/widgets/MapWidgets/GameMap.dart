@@ -37,7 +37,6 @@ class _GameMapController extends State<GameMap> {
   GoogleMapController _controller;
   Location _location = Location();
 
-  BitmapDescriptor pinIcon;
   Set<Marker> _markers = {};
   // Only used for initial loading, will be replaced as soon as user location is fetched.
   LatLng _playerPosition = LatLng(51.6978162, 5.3036748);
@@ -48,11 +47,6 @@ class _GameMapController extends State<GameMap> {
     rootBundle
         .loadString('assets/styles/light-map.json')
         .then((value) => _mapStyle = value);
-
-    // Load the icon from storage
-    ImageHelper()
-        .getImage('map-markers/police_marker.png', 75)
-        .then((value) => pinIcon = value);
 
     super.initState();
   }
