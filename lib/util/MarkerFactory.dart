@@ -1,7 +1,6 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hunted_app/models/GameLocation.dart';
 import 'package:hunted_app/models/LocationTypeEnum.dart';
-import 'package:hunted_app/models/Markers/CustomMarker.dart';
 import 'package:hunted_app/models/Markers/PoliceStationMarker.dart';
 import 'package:hunted_app/models/Markers/TreasureMarker.dart';
 
@@ -10,43 +9,35 @@ class MarkerFactory {
 
   int _createCounter = 0;
 
-  Future<CustomMarker> create(
-      LocationType locationType, LatLng location) async {
-    CustomMarker returnMarker;
+  Future<Marker> create(LocationType locationType, LatLng location) async {
+    var futureMarker;
 
     switch (locationType) {
       case LocationType.POLICE_STATION:
-        {
-          final icon = await PoliceStationMarker.getIcon();
-          _createCounter++;
-          returnMarker = PoliceStationMarker(
-              MarkerId(_createCounter.toString()), location, icon);
-        }
+        futureMarker = PoliceStationMarker(newMarkerId(), location);
         break;
       case LocationType.TREASURE:
-        {
-          final icon = await TreasureMarker.getIcon();
-          _createCounter++;
-          returnMarker = TreasureMarker(
-              MarkerId(_createCounter.toString()), location, icon);
-        }
+        futureMarker = TreasureMarker(newMarkerId(), location);
         break;
       default:
-        returnMarker = null;
+        return null;
     }
 
-    return returnMarker;
+    return await futureMarker.getGoogleMarker().then((value) => value);
   }
 
-  Future<List<CustomMarker>> createAll(List<GameLocation> locations) async {
+  Future<List<Marker>> createAll(List<GameLocation> locations) async {
     return Stream.fromIterable(locations)
         .asyncMap((e) => this.create(
             e.locationType, LatLng(e.location.latitude, e.location.longitude)))
         .toList();
   }
 
+  MarkerId newMarkerId() => MarkerId((_createCounter++).toString());
+
   factory MarkerFactory() {
     return _instance;
   }
-  MarkerFactory._internal() {}
+
+  MarkerFactory._internal();
 }
