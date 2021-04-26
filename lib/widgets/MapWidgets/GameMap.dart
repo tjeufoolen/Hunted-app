@@ -5,18 +5,24 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hunted_app/models/Player.dart';
 import 'package:hunted_app/util/ImageHelper.dart';
+import 'package:hunted_app/util/MarkerFactory.dart';
 import 'package:location/location.dart';
 
 import '../WidgetView.dart';
 
 class GameMap extends StatefulWidget {
+  final Player loggedInPlayer;
+  const GameMap({Key key, this.loggedInPlayer}) : super(key: key);
+
   @override
   _GameMapController createState() => _GameMapController();
 }
 
 // Controller
 class _GameMapController extends State<GameMap> {
+  @override
   Widget build(BuildContext context) => _GameMapView(this);
 
   String _mapStyle;
@@ -40,6 +46,16 @@ class _GameMapController extends State<GameMap> {
         .getImage('map-markers/police_marker.png', 75)
         .then((value) => pinIcon = value);
 
+    if (widget?.loggedInPlayer?.game?.gameLocations != null) {
+      MarkerFactory()
+          .createAll(widget.loggedInPlayer.game.gameLocations)
+          .then((value) {
+        setState(() {
+          _markers = value.toSet();
+        });
+      });
+    }
+
     super.initState();
   }
 
@@ -47,8 +63,8 @@ class _GameMapController extends State<GameMap> {
     _controller = mapController;
     _controller.setMapStyle(_mapStyle);
 
-    addPin();
-
+    // addPin();
+    //
     _location.getLocation().then((newLocation) {
       _playerPosition = LatLng(newLocation.latitude, newLocation.longitude);
       moveCameraToCurrentLocation();
