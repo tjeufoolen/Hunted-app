@@ -34,6 +34,7 @@ dependencies:
   google_maps_flutter: ^2.0.3
   location: ^2.5.4
   flutter_config: ^2.0.0
+  cron: ^0.3.0
 
 dev_dependencies:
   flutter_test:

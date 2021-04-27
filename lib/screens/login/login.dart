@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:cron/cron.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
 import 'package:location/location.dart';
@@ -29,23 +30,6 @@ class _LoginController extends State<Login> {
   @override
   void initState() {
     authService = AuthDataService();
-    print('connecting to socket');
-    Socket socket = io('http://10.0.2.2:3000',
-        OptionBuilder()
-            .setTransports(['websocket']) // for Flutter or Dart VM
-            .disableAutoConnect()  // disable auto-connection
-            .setExtraHeaders({'foo': 'bar'}) // optional
-            .build());
-    socket.connect();
-
-    print('should be connected?');
-    socket.onConnect((_) {
-      print('connected');
-      socket.emit('join_room', 'test');
-    });
-    socket.on('event', (data) => print(data));
-    socket.onDisconnect((_) => print('disconnect'));
-    socket.on('fromServer', (_) => print(_));
     super.initState();
   }
 
