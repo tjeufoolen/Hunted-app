@@ -130,7 +130,7 @@ class _GameView extends WidgetView<Game, _GameController> {
         ],
       ),
       body: Center(
-        child: GameMap(),
+        child: GameMap(loggedInPlayer: state.loggedInPlayer),
       ),
     );
   }
