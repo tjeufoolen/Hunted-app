@@ -1,6 +1,5 @@
 import 'package:cron/cron.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_config/flutter_config.dart';
 
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
@@ -8,6 +7,8 @@ import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:flutter_session/flutter_session.dart';
 
 import 'package:hunted_app/models/Player.dart';
+import 'package:hunted_app/services/SocketService.dart';
+import 'package:hunted_app/util/CronHelper.dart';
 import 'package:hunted_app/widgets/MapWidgets/GameMap.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -25,6 +26,8 @@ class _GameController extends State<Game> {
   Widget build(BuildContext context) => _GameView(this);
   Player loggedInPlayer;
   Location _location = Location();
+  SocketService _socketService = new SocketService();
+  CronHelper _cronHelper = new CronHelper();
   Cron cron;
   Socket socket;
 
@@ -34,10 +37,10 @@ class _GameController extends State<Game> {
   @override
   void initState() {
     super.initState();
-    _initializeSocket();
-    _initializeCron();
 
     _loadPlayer().then((player) {
+      _socketService.initializeSocket(player.game.id);
+      cron = _cronHelper.initializeCron(player);
       setState(() {
         loggedInPlayer = player;
         countdownEnd = loggedInPlayer.game.startAt
@@ -45,39 +48,6 @@ class _GameController extends State<Game> {
             .millisecondsSinceEpoch;
         countdownController =
             CountdownTimerController(endTime: countdownEnd, onEnd: _endGame);
-      });
-    });
-  }
-
-  void _initializeSocket() {
-    print('connecting to socket');
-    socket = io(FlutterConfig.get('API_URL'),
-        OptionBuilder()
-            .setTransports(['websocket']) // for Flutter or Dart VM
-            .disableAutoConnect()  // disable auto-connection
-            .build());
-    socket.connect();
-    socket.onConnect((_) {
-      print('connected');
-      socket.emit('join_room', loggedInPlayer.game.id);
-    });
-    // Out commented code is for debugging purposes
-    // socket.on('event', (data) => print(data));
-    socket.onDisconnect((_) => print('disconnect'));
-    // socket.on('fromServer', (_) => print(_));
-  }
-
-  void _initializeCron() {
-    cron = new Cron();
-    cron.schedule(new Schedule.parse('*/1 * * * *'), () async {
-      _location.getLocation().then((newLocation) {
-        var message = {
-          "id": loggedInPlayer.id,
-          "latitude": newLocation.latitude,
-          "longitude": newLocation.longitude
-        };
-        print("location sent");
-        socket.emit('send_location', message);
       });
     });
   }
