@@ -1,3 +1,4 @@
+import 'package:cron/cron.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
@@ -6,8 +7,13 @@ import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:flutter_session/flutter_session.dart';
 
 import 'package:hunted_app/models/Player.dart';
+import 'package:hunted_app/services/SocketService.dart';
+import 'package:hunted_app/util/CronHelper.dart';
 import 'package:hunted_app/widgets/MapWidgets/GameMap.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
+import 'package:socket_io_client/socket_io_client.dart';
+import 'package:location/location.dart';
+
 
 // Widget
 class Game extends StatefulWidget {
@@ -19,6 +25,11 @@ class Game extends StatefulWidget {
 class _GameController extends State<Game> {
   Widget build(BuildContext context) => _GameView(this);
   Player loggedInPlayer;
+  Location _location = Location();
+  SocketService _socketService = new SocketService();
+  CronHelper _cronHelper = new CronHelper();
+  Cron cron;
+  Socket socket;
 
   int countdownEnd = 0;
   CountdownTimerController countdownController;
@@ -28,6 +39,8 @@ class _GameController extends State<Game> {
     super.initState();
 
     _loadPlayer().then((player) {
+      _socketService.initializeSocket(player.game.id);
+      cron = _cronHelper.initializeCron(player);
       setState(() {
         loggedInPlayer = player;
         countdownEnd = loggedInPlayer.game.startAt
@@ -40,6 +53,7 @@ class _GameController extends State<Game> {
   }
 
   void _endGame() {
+    cron.close();
     Navigator.pushReplacementNamed(context, '/login');
   }
 
