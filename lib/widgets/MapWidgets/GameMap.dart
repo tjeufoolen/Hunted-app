@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hunted_app/util/ColorHelper.dart';
 import 'package:maps_toolkit/maps_toolkit.dart' as maptoolkit;
 import 'package:hunted_app/models/Game.dart';
 import 'package:hunted_app/models/Player.dart';
@@ -131,8 +132,8 @@ class _GameMapController extends State<GameMap> {
             LatLng(currentGame.gameAreaLatitude, currentGame.gameAreaLongitude),
         radius: currentGame.gameAreaRadius.toDouble(),
         strokeWidth: 5,
-        strokeColor: Color.fromARGB(100, 86, 247, 64),
-        fillColor: Color.fromARGB(14, 86, 247, 64),
+        strokeColor: ColorHelper.gameAreaOutline,
+        fillColor: ColorHelper.gameAreaFill,
       );
 
       setState(() {
