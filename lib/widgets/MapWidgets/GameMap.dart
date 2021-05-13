@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:maps_toolkit/maps_toolkit.dart' as maptoolkit;
 import 'package:hunted_app/models/Game.dart';
 import 'package:hunted_app/models/Player.dart';
 import 'package:hunted_app/util/MarkerFactory.dart';
@@ -18,6 +19,20 @@ class GameMap extends StatefulWidget {
 
 // Controller
 class _GameMapController extends State<GameMap> {
+  String _mapStyle;
+  GoogleMapController _controller;
+
+  Location _location = Location();
+
+  Set<Marker> _markers = {};
+  Set<Circle> _gameAreas = {};
+  Circle _gameArea;
+
+  bool _gameAreaDialogIsShowing = false;
+
+  // Only used for initial loading, will be replaced as soon as user location is fetched.
+  LatLng _playerPosition = LatLng(51.6978162, 5.3036748);
+
   @override
   Widget build(BuildContext context) {
     final Game currentGame = widget?.loggedInPlayer?.game;
@@ -29,15 +44,6 @@ class _GameMapController extends State<GameMap> {
 
     return _GameMapView(this);
   }
-
-  String _mapStyle;
-  GoogleMapController _controller;
-  Location _location = Location();
-
-  Set<Marker> _markers = {};
-  Set<Circle> _gameArea = {};
-  // Only used for initial loading, will be replaced as soon as user location is fetched.
-  LatLng _playerPosition = LatLng(51.6978162, 5.3036748);
 
   @override
   void initState() {
@@ -60,7 +66,47 @@ class _GameMapController extends State<GameMap> {
 
     _location.onLocationChanged().listen((LocationData newLocation) {
       _playerPosition = LatLng(newLocation.latitude, newLocation.longitude);
+      _checkIfPlayerOutsideOfGame();
     });
+  }
+
+  void _checkIfPlayerOutsideOfGame() {
+    if (_gameArea != null) {
+      final playerLocation = maptoolkit.LatLng(
+          _playerPosition.latitude, _playerPosition.longitude);
+      final centerGameAreaLocation = maptoolkit.LatLng(
+          _gameArea.center.latitude, _gameArea.center.longitude);
+      final range = _gameArea.radius;
+
+      if (maptoolkit.SphericalUtil.computeDistanceBetween(
+              playerLocation, centerGameAreaLocation) >
+          range) {
+        _triggerPlayerOutsideOfGame();
+      }
+    }
+  }
+
+  void _triggerPlayerOutsideOfGame() {
+    if (!_gameAreaDialogIsShowing) {
+      _gameAreaDialogIsShowing = true;
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Leaving gamearea!"),
+              content: Text("Turn back immediately"),
+              actions: [
+                TextButton(
+                  child: Text("Ok"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _gameAreaDialogIsShowing = false;
+                  },
+                )
+              ],
+            );
+          });
+    }
   }
 
   void _setGameLocations(Game currentGame) {
@@ -79,19 +125,18 @@ class _GameMapController extends State<GameMap> {
     bool gameHasAreaRadius = currentGame.gameAreaRadius != null;
 
     if (gameHasLatitude && gameHasLongitude && gameHasAreaRadius) {
-      Set<Circle> newGameArea = {
-        Circle(
-          circleId: CircleId('gameArea'),
-          center: LatLng(
-              currentGame.gameAreaLatitude, currentGame.gameAreaLongitude),
-          radius: currentGame.gameAreaRadius.toDouble(),
-          strokeWidth: 5,
-          strokeColor: Color.fromARGB(100, 86, 247, 64),
-          fillColor: Color.fromARGB(14, 86, 247, 64),
-        )
-      };
+      _gameArea = Circle(
+        circleId: CircleId('gameArea'),
+        center:
+            LatLng(currentGame.gameAreaLatitude, currentGame.gameAreaLongitude),
+        radius: currentGame.gameAreaRadius.toDouble(),
+        strokeWidth: 5,
+        strokeColor: Color.fromARGB(100, 86, 247, 64),
+        fillColor: Color.fromARGB(14, 86, 247, 64),
+      );
+
       setState(() {
-        _gameArea = newGameArea;
+        _gameAreas = {_gameArea};
       });
     }
   }
@@ -124,7 +169,7 @@ class _GameMapView extends WidgetView<GameMap, _GameMapController> {
         zoomControlsEnabled: false,
         buildingsEnabled: false,
         markers: state._markers,
-        circles: state._gameArea,
+        circles: state._gameAreas,
       ),
     );
   }
