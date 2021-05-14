@@ -131,9 +131,9 @@ class _LoginView extends WidgetView<Login, _LoginController> {
                 padding: const EdgeInsets.only(top: 20.0),
                 child: Center(
                   child: Container(
-                    width: 200,
-                    height: 150,
-                    child: Image.asset('assets/images/flutter-logo.png'),
+                    width: 266,
+                    height: 200,
+                    child: Image.asset('assets/images/logo-icon.png'),
                   ),
                 ),
               ),
