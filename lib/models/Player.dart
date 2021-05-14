@@ -3,7 +3,7 @@ import 'Game.dart';
 class Player {
   final int id;
   final Game game;
-  final int playerRole;
+  final PlayerRolesEnum playerRole;
   final bool outOfTheGame;
   // Location location;
 
@@ -21,7 +21,7 @@ class Player {
     return Player(
       id: json['id'],
       game: Game.fromJson(json['game']),
-      playerRole: json['playerRole'],
+      playerRole: PlayerRolesEnum.values[json['playerRole']],
       outOfTheGame: json['outOfTheGame'],
     );
   }
@@ -29,7 +29,12 @@ class Player {
   Map<String, dynamic> toJson() => {
         'id': id,
         'game': game.toJson(),
-        'playerRole': playerRole,
+        'playerRole': playerRole.index,
         'outOfTheGame': outOfTheGame,
       };
+}
+
+enum PlayerRolesEnum {
+  POLICE,
+  THIEF
 }

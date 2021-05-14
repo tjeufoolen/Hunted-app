@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hunted_app/models/GameLocation.dart';
 import 'package:hunted_app/models/Player.dart';
-import 'package:hunted_app/util/ImageHelper.dart';
 import 'package:hunted_app/util/MarkerFactory.dart';
 import 'package:location/location.dart';
+import 'package:hunted_app/services/SocketService.dart';
+import 'package:socket_io_client/socket_io_client.dart';
+
+
 
 import '../WidgetView.dart';
 
@@ -18,16 +23,25 @@ class GameMap extends StatefulWidget {
 
 // Controller
 class _GameMapController extends State<GameMap> {
+
+  bool socketNotSetupYet = true;
   @override
   Widget build(BuildContext context) {
-    if (widget?.loggedInPlayer?.game?.gameLocations != null) {
-      MarkerFactory()
-          .createAll(widget.loggedInPlayer.game.gameLocations)
-          .then((value) {
-        setState(() {
-          _markers = value.toSet();
+
+    if(socketNotSetupYet){
+      if (widget?.loggedInPlayer?.game?.gameLocations != null) {
+        MarkerFactory()
+            .createAll(widget.loggedInPlayer.game.gameLocations)
+            .then((value) {
+          setState(() {
+            _markers = value.toSet();
+          });
         });
-      });
+      }
+      Socket socket = _socketService.getSocket();
+      socket.on('locations', (data) => _onLocationsReceived(data));
+      socketNotSetupYet = false;
+      // socket.on('locations', _onLocationsReceived);
     }
 
     return _GameMapView(this);
@@ -36,6 +50,7 @@ class _GameMapController extends State<GameMap> {
   String _mapStyle;
   GoogleMapController _controller;
   Location _location = Location();
+  SocketService _socketService = SocketService();
 
   Set<Marker> _markers = {};
   // Only used for initial loading, will be replaced as soon as user location is fetched.
@@ -43,12 +58,24 @@ class _GameMapController extends State<GameMap> {
 
   @override
   void initState() {
+    super.initState();
+
     // Load the map style from the assets
     rootBundle
         .loadString('assets/styles/light-map.json')
         .then((value) => _mapStyle = value);
-
-    super.initState();
+  }
+  
+  void _onLocationsReceived(locations){
+    print(locations);
+    List<GameLocation> parsedLocations = List<GameLocation>.from(locations.toList().map((data) => GameLocation.fromJson(data)));
+    MarkerFactory()
+        .createAll(parsedLocations)
+        .then((value) {
+      setState(() {
+        _markers = value.toSet();
+      });
+    });
   }
 
   void _onMapCreated(GoogleMapController mapController) {

@@ -26,8 +26,8 @@ class _GameController extends State<Game> {
   Widget build(BuildContext context) => _GameView(this);
   Player loggedInPlayer;
   Location _location = Location();
-  SocketService _socketService = new SocketService();
-  CronHelper _cronHelper = new CronHelper();
+  SocketService _socketService = SocketService();
+  CronHelper _cronHelper = CronHelper();
   Cron cron;
   Socket socket;
 
@@ -39,7 +39,7 @@ class _GameController extends State<Game> {
     super.initState();
 
     _loadPlayer().then((player) {
-      _socketService.initializeSocket(player.game.id);
+      _socketService.initializeSocket(player.game.id, player.playerRole);
       cron = _cronHelper.initializeCron(player);
       setState(() {
         loggedInPlayer = player;
