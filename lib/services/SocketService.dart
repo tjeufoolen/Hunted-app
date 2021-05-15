@@ -19,6 +19,7 @@ class SocketService {
     _socket.onConnect((_) {
       _socket.emit('join_room', gameId);
 
+      // TODO: placeholder for when enums are available
       //   if (playerType == PlayerRolesEnum.POLICE) {
       //     _socket.emit('joinroom', "police" + gameId.toString());
       //   } else if (playerType == PlayerRolesEnum.THIEF) {
