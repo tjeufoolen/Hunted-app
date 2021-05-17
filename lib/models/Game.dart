@@ -13,7 +13,7 @@ class Game {
   Game({
     this.id,
     this.startAt,
-    this.isStarted
+    this.isStarted,
     this.minutes,
     this.gameLocations,
     this.gameAreaLatitude,
