@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hunted_app/models/Player.dart';
-import 'package:hunted_app/util/ImageHelper.dart';
 import 'package:hunted_app/util/MarkerFactory.dart';
 import 'package:location/location.dart';
 

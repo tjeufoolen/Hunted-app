@@ -44,7 +44,7 @@ class _LobbyController extends State<Lobby> {
   }
 
   void _timerEnded() {
-    Navigator.pushReplacementNamed(context, Routes.Game,
+    Navigator.of(context, rootNavigator: true).pushReplacementNamed(Routes.Game,
         arguments: GameArguments(loggedInPlayer));
   }
 

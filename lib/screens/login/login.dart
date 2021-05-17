@@ -63,10 +63,12 @@ class _LoginController extends State<Login> {
       if (joinedAsPlayer.game.startAt
           .toUtc()
           .isBefore(DateTime.now().toUtc())) {
-        Navigator.pushReplacementNamed(context, Routes.Game,
+        Navigator.of(context, rootNavigator: true).pushReplacementNamed(
+            Routes.Game,
             arguments: GameArguments(joinedAsPlayer));
       } else {
-        Navigator.pushReplacementNamed(context, Routes.Lobby,
+        Navigator.of(context, rootNavigator: true).pushReplacementNamed(
+            Routes.Lobby,
             arguments: LobbyArguments(joinedAsPlayer));
       }
     });
