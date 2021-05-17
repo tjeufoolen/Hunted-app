@@ -18,7 +18,6 @@ class SocketService {
     _socket.connect();
 
     _socket.onConnect((_) {
-      print('join the room');
       _socket.emit('join_room', gameId);
 
       if(playerType == PlayerRolesEnum.POLICE) {
