@@ -4,6 +4,7 @@ import 'package:flutter_session/flutter_session.dart';
 import 'package:hunted_app/routes/Routes.dart';
 import 'package:hunted_app/screens/game/gameArguments.dart';
 import 'package:hunted_app/screens/lobby/lobbyArguments.dart';
+import 'package:hunted_app/services/SocketService.dart';
 import 'package:location/location.dart';
 
 import 'package:hunted_app/exceptions/HTTPResponseException.dart';
@@ -25,6 +26,7 @@ class _LoginController extends State<Login> {
 
   AuthDataService authService;
   String currentInviteCode;
+  SocketService socketService = SocketService();
 
   @override
   void initState() {
@@ -60,16 +62,22 @@ class _LoginController extends State<Login> {
   void handleSuccessfulLogin(Player joinedAsPlayer) async {
     FlutterSession().set("LoggedInPlayer", joinedAsPlayer).then((value) {
       // The game has already started, navigate to game
-      if (joinedAsPlayer.game.startAt
-          .toUtc()
-          .isBefore(DateTime.now().toUtc())) {
-        Navigator.of(context, rootNavigator: true).pushReplacementNamed(
-            Routes.Game,
-            arguments: GameArguments(joinedAsPlayer));
+      socketService.initializeSocket(
+          joinedAsPlayer.game.id,
+          joinedAsPlayer
+              .playerRole); //TODO: second parameter is placeholder for when enums are available
+
+      if (joinedAsPlayer.game.isStarted &&
+          joinedAsPlayer.game.startAt
+              .toUtc()
+              .isBefore(DateTime.now().toUtc())) {
+        // Navigator.of(context, rootNavigator: true).pushReplacementNamed(
+        //     Routes.Game,
+        //     arguments: GameArguments(joinedAsPlayer));
       } else {
-        Navigator.of(context, rootNavigator: true).pushReplacementNamed(
-            Routes.Lobby,
-            arguments: LobbyArguments(joinedAsPlayer));
+        // Navigator.of(context, rootNavigator: true).pushReplacementNamed(
+        //     Routes.Lobby,
+        //     arguments: LobbyArguments(joinedAsPlayer));
       }
     });
   }

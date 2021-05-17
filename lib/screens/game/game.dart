@@ -4,15 +4,13 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
-import 'package:hunted_app/routes/GameRoutes.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:cron/cron.dart';
 
 import 'package:hunted_app/models/Player.dart';
 import 'package:hunted_app/routes/Routes.dart';
+import 'package:hunted_app/routes/GameRoutes.dart';
 import 'package:hunted_app/screens/game/gameArguments.dart';
-import 'package:hunted_app/services/SocketService.dart';
-import 'package:hunted_app/util/CronHelper.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
 
 import 'mapScreenArguments.dart';
@@ -36,8 +34,6 @@ class _GameController extends State<Game> {
   Player loggedInPlayer;
   int currentIndex = 0;
 
-  SocketService _socketService = new SocketService();
-  CronHelper _cronHelper = new CronHelper();
   Cron cron;
   Socket socket;
 
@@ -48,8 +44,6 @@ class _GameController extends State<Game> {
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      _socketService.initializeSocket(loggedInPlayer.game.id);
-      cron = _cronHelper.initializeCron(loggedInPlayer);
       setState(() {
         countdownEnd = loggedInPlayer.game.startAt
             .add(Duration(minutes: loggedInPlayer.game.minutes))
