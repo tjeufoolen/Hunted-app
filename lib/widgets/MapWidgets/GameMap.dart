@@ -3,6 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hunted_app/models/GameLocation.dart';
+import 'package:hunted_app/models/LocationTypeEnum.dart';
 import 'package:hunted_app/util/ColorHelper.dart';
 import 'package:maps_toolkit/maps_toolkit.dart' as maptoolkit;
 import 'package:hunted_app/models/Game.dart';
@@ -39,6 +40,8 @@ class _GameMapController extends State<GameMap> {
   Circle _gameArea;
 
   bool _gameAreaDialogIsShowing = false;
+  bool _socketOnIsSetUp = false;
+  bool _startUpLocationsSetup = false;
 
   // Only used for initial loading, will be replaced as soon as user location is fetched.
   LatLng _playerPosition = LatLng(51.6978162, 5.3036748);
@@ -49,10 +52,18 @@ class _GameMapController extends State<GameMap> {
 
     if (currentGame != null) {
       _setGameArea(currentGame);
+      if(!_startUpLocationsSetup){
+        _setGameLocations(currentGame);
+        _startUpLocationsSetup = true;
+      }
+    }
+
+    if (!_socketOnIsSetUp) {
       Socket socket = _socketService.getSocket();
       socket.on('locations', (data) => _onLocationsReceived(data));
-      _setGameLocations(currentGame);
+      _socketOnIsSetUp = true;
     }
+
 
     return _GameMapView(this);
   }
@@ -70,6 +81,15 @@ class _GameMapController extends State<GameMap> {
   void _onLocationsReceived(locations){
     print(locations);
     List<GameLocation> parsedLocations = List<GameLocation>.from(locations.toList().map((data) => GameLocation.fromJson(data)));
+    // TODO this filter is an educated guess because its currently not possible to test it
+    for(int i = 0; i < parsedLocations.length; i ++){
+      if(parsedLocations[i].locationType == LocationType.POLICE || parsedLocations[i].locationType == LocationType.THIEF){
+         if(parsedLocations[i].id == widget?.loggedInPlayer?.id) {
+           parsedLocations.removeAt(i);
+         }
+      }
+    }
+
     MarkerFactory()
         .createAll(parsedLocations)
         .then((value) {
