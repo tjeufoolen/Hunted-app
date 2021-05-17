@@ -49,7 +49,7 @@ class _GameMapController extends State<GameMap> {
 
     if (currentGame != null) {
       _setGameArea(currentGame);
-	  Socket socket = _socketService.getSocket();
+      Socket socket = _socketService.getSocket();
       socket.on('locations', (data) => _onLocationsReceived(data));
       _setGameLocations(currentGame);
     }
