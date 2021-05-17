@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
-import 'package:flutter_countdown_timer/current_remaining_time.dart';
-import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:flutter_session/flutter_session.dart';
-
+import 'package:hunted_app/services/SocketService.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
 import 'package:hunted_app/models/Player.dart';
 
@@ -15,13 +12,19 @@ class Lobby extends StatefulWidget {
 
 // Controller
 class _LobbyController extends State<Lobby> {
+  _LobbyController() {
+    _socketService.getSocket().on('gameStarted', (_) {
+      setState(() {
+        Navigator.pushReplacementNamed(context, '/game');
+      });
+    });
+  }
+
   Widget build(BuildContext context) => _LobbyView(this);
 
   Player loggedInPlayer;
   String gameId;
-
-  int countdownEnd = 0;
-  CountdownTimerController countdownController;
+  SocketService _socketService = SocketService();
 
   @override
   void initState() {
@@ -30,9 +33,6 @@ class _LobbyController extends State<Lobby> {
         setState(() {
           loggedInPlayer = player;
           gameId = loggedInPlayer?.game?.id?.toString();
-          countdownEnd = loggedInPlayer.game.startAt.millisecondsSinceEpoch;
-          countdownController = CountdownTimerController(
-              endTime: countdownEnd, onEnd: _timerEnded);
         });
       });
     });
@@ -43,10 +43,6 @@ class _LobbyController extends State<Lobby> {
   Future<Player> _loadPlayer() async {
     return Player.fromJson(await FlutterSession().get("LoggedInPlayer"));
   }
-
-  void _timerEnded() {
-    Navigator.pushReplacementNamed(context, '/game');
-  }
 }
 
 // View
@@ -55,18 +51,10 @@ class _LobbyView extends WidgetView<Lobby, _LobbyController> {
   const _LobbyView(this.state) : super(state);
 
   Widget build(BuildContext context) {
-    String _formatNumber(int number) {
-      if (number == null) return "00";
-      if (number < 10) {
-        return "0" + number.toString();
-      }
-      return number.toString();
-    }
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Lobby game ${state.gameId ?? ''}"),
+        title: Text("Lobby - Game ${state.gameId ?? ''}"),
       ),
       body: Center(
         child: Column(
@@ -74,21 +62,13 @@ class _LobbyView extends WidgetView<Lobby, _LobbyController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              "Game ${state.gameId ?? ''}",
+              "Lobby",
               style: TextStyle(fontSize: 48),
             ),
-            CountdownTimer(
-              controller: state.countdownController,
-              endTime: state.countdownEnd,
-              widgetBuilder: (_, CurrentRemainingTime time) {
-                if (time == null) {
-                  return Text("Game is starting...");
-                }
-                return Text(
-                  "${_formatNumber(time.days)} : ${_formatNumber(time.hours)} : ${_formatNumber(time.min)} : ${_formatNumber(time.sec)}",
-                  style: TextStyle(fontSize: 32),
-                );
-              },
+            Text(
+              "Je bevind je momenteel in de lobby van game ${state.gameId ?? ''}.\nHet spel start automatisch, zodra de spelleider dit heeft aangegeven.",
+              style: TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
