@@ -6,13 +6,19 @@ class Game {
   final bool isStarted;
   final int minutes;
   final List<GameLocation> gameLocations;
+  final num gameAreaLatitude;
+  final num gameAreaLongitude;
+  final num gameAreaRadius;
 
   Game({
     this.id,
     this.startAt,
-    this.isStarted,
+    this.isStarted
     this.minutes,
     this.gameLocations,
+    this.gameAreaLatitude,
+    this.gameAreaLongitude,
+    this.gameAreaRadius,
   });
 
   factory Game.fromJson(Map<String, dynamic> json) {
@@ -21,6 +27,9 @@ class Game {
         startAt: DateTime.parse(json['startAt']),
         isStarted: json['isStarted'],
         minutes: json['minutes'],
+        gameAreaLatitude: json['gameAreaLatitude'],
+        gameAreaLongitude: json['gameAreaLongitude'],
+        gameAreaRadius: json['gameAreaRadius'],
         gameLocations: List<GameLocation>.from(json["gameLocations"]
             .toList()
             .map((data) => GameLocation.fromJson(data))));
@@ -31,6 +40,9 @@ class Game {
         'startAt': startAt.toIso8601String(),
         'isStarted': isStarted,
         'minutes': minutes,
+        'gameAreaLatitude': gameAreaLatitude,
+        'gameAreaLongitude': gameAreaLongitude,
+        'gameAreaRadius': gameAreaRadius,
         'gameLocations': gameLocations.map((obj) => obj.toJson()).toList()
       };
 }
