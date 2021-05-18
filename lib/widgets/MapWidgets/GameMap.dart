@@ -80,11 +80,11 @@ class _GameMapController extends State<GameMap> {
   
   void _onLocationsReceived(locations){
     List<GameLocation> parsedLocations = List<GameLocation>.from(locations.toList().map((data) => GameLocation.fromJson(data)));
-    // TODO this filter is an educated guess because its currently not possible to test it
     for(int i = 0; i < parsedLocations.length; i ++){
       if(parsedLocations[i].locationType == LocationType.POLICE || parsedLocations[i].locationType == LocationType.THIEF){
          if(parsedLocations[i].id == widget?.loggedInPlayer?.id) {
            parsedLocations.removeAt(i);
+           break;
          }
       }
     }
