@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hunted_app/screens/game/game.dart';
-import 'package:hunted_app/screens/lobby/lobby.dart';
+import 'package:hunted_app/routes/Routes.dart';
 import 'package:flutter_config/flutter_config.dart';
-
-import 'package:hunted_app/screens/login/login.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +21,8 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        initialRoute: "/login",
+        initialRoute: Routes.Login,
         debugShowCheckedModeBanner: false,
-        routes: <String, WidgetBuilder>{
-          "/login": (BuildContext context) => new Login(),
-          "/lobby": (BuildContext context) => new Lobby(),
-          "/game": (BuildContext context) => new Game(),
-        });
+        routes: Routes.getRoutes());
   }
 }

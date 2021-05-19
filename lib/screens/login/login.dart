@@ -1,7 +1,9 @@
 import 'dart:ui';
-import 'package:cron/cron.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:hunted_app/routes/Routes.dart';
+import 'package:hunted_app/screens/game/gameArguments.dart';
+import 'package:hunted_app/screens/lobby/lobbyArguments.dart';
 import 'package:hunted_app/services/SocketService.dart';
 import 'package:location/location.dart';
 
@@ -9,8 +11,6 @@ import 'package:hunted_app/exceptions/HTTPResponseException.dart';
 import 'package:hunted_app/models/Player.dart';
 import 'package:hunted_app/services/AuthDataService.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
-import 'package:socket_io_client/socket_io_client.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 // Widget
 class Login extends StatefulWidget {
@@ -71,9 +71,13 @@ class _LoginController extends State<Login> {
           joinedAsPlayer.game.startAt
               .toUtc()
               .isBefore(DateTime.now().toUtc())) {
-        Navigator.pushReplacementNamed(context, '/game');
+        Navigator.of(context, rootNavigator: true).pushReplacementNamed(
+            Routes.Game,
+            arguments: GameArguments(joinedAsPlayer));
       } else {
-        Navigator.pushReplacementNamed(context, '/lobby');
+        Navigator.of(context, rootNavigator: true).pushReplacementNamed(
+            Routes.Lobby,
+            arguments: LobbyArguments(joinedAsPlayer));
       }
     });
   }
@@ -137,9 +141,9 @@ class _LoginView extends WidgetView<Login, _LoginController> {
                 padding: const EdgeInsets.only(top: 20.0),
                 child: Center(
                   child: Container(
-                    width: 200,
-                    height: 150,
-                    child: Image.asset('assets/images/flutter-logo.png'),
+                    width: 266,
+                    height: 200,
+                    child: Image.asset('assets/images/logo-icon.png'),
                   ),
                 ),
               ),

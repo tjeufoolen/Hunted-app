@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_session/flutter_session.dart';
+import 'package:hunted_app/routes/Routes.dart';
+import 'package:hunted_app/screens/game/gameArguments.dart';
+import 'package:hunted_app/screens/lobby/lobbyArguments.dart';
+
 import 'package:hunted_app/services/SocketService.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
 import 'package:hunted_app/models/Player.dart';
@@ -12,15 +15,21 @@ class Lobby extends StatefulWidget {
 
 // Controller
 class _LobbyController extends State<Lobby> {
+  Widget build(BuildContext context) {
+    final LobbyArguments arguments = ModalRoute.of(context).settings.arguments;
+    loggedInPlayer = arguments.loggedInPlayer;
+    return _LobbyView(this);
+  }
+
   _LobbyController() {
     _socketService.getSocket().on('gameStarted', (_) {
       setState(() {
-        Navigator.pushReplacementNamed(context, '/game');
+        Navigator.of(context, rootNavigator: true).pushReplacementNamed(
+            Routes.Game,
+            arguments: GameArguments(loggedInPlayer));
       });
     });
   }
-
-  Widget build(BuildContext context) => _LobbyView(this);
 
   Player loggedInPlayer;
   String gameId;
@@ -29,19 +38,23 @@ class _LobbyController extends State<Lobby> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadPlayer().then((player) {
-        setState(() {
-          loggedInPlayer = player;
-          gameId = loggedInPlayer?.game?.id?.toString();
-        });
+      setState(() {
+        gameId = loggedInPlayer?.game?.id?.toString();
       });
     });
     // Continue initialization. Should be after own code.
     super.initState();
   }
 
-  Future<Player> _loadPlayer() async {
-    return Player.fromJson(await FlutterSession().get("LoggedInPlayer"));
+  void _bottomNavTapped(int index) {
+    switch (index) {
+      case 0:
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, Routes.Login);
+        break;
+      default:
+    }
   }
 }
 
@@ -72,6 +85,19 @@ class _LobbyView extends WidgetView<Lobby, _LobbyController> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Lobby",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.logout),
+            label: "Back",
+          ),
+        ],
+        onTap: state._bottomNavTapped,
       ),
     );
   }
