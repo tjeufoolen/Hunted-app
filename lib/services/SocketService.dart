@@ -1,4 +1,5 @@
 import 'package:flutter_config/flutter_config.dart';
+import 'package:hunted_app/models/Player.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class SocketService {
@@ -19,19 +20,20 @@ class SocketService {
     _socket.onConnect((_) {
       _socket.emit('join_room', gameId);
 
-      // TODO: placeholder for when enums are available
-      //   if (playerType == PlayerRolesEnum.POLICE) {
-      //     _socket.emit('joinroom', "police" + gameId.toString());
-      //   } else if (playerType == PlayerRolesEnum.THIEF) {
-      //     _socket.emit('joinroom', "thiefs" + gameId.toString());
-      //   }
+      if(playerType == PlayerRolesEnum.POLICE) {
+        _socket.emit('join_room', "police_" + gameId.toString());
+      } else if (playerType == PlayerRolesEnum.THIEF) {
+        _socket.emit('join_room', "thiefs_" + gameId.toString());
+      }
     });
+
     return _socket;
   }
 
   void emitData(event, data) {
     _socket.emit(event, data);
   }
+
 
   Socket getSocket() {
     return _socket;

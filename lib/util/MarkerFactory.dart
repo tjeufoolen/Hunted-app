@@ -1,7 +1,9 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hunted_app/models/GameLocation.dart';
 import 'package:hunted_app/models/LocationTypeEnum.dart';
+import 'package:hunted_app/models/Markers/PoliceMarker.dart';
 import 'package:hunted_app/models/Markers/PoliceStationMarker.dart';
+import 'package:hunted_app/models/Markers/ThiefMarker.dart';
 import 'package:hunted_app/models/Markers/TreasureMarker.dart';
 
 class MarkerFactory {
@@ -18,6 +20,12 @@ class MarkerFactory {
         break;
       case LocationType.TREASURE:
         futureMarker = TreasureMarker(newMarkerId(), location);
+        break;
+      case LocationType.POLICE:
+        futureMarker = PoliceMarker(newMarkerId(), location);
+        break;
+      case LocationType.THIEF:
+        futureMarker = ThiefMarker(newMarkerId(), location);
         break;
       default:
         return null;
