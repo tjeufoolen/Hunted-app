@@ -5,6 +5,7 @@ import 'package:hunted_app/routes/Routes.dart';
 import 'package:hunted_app/screens/game/gameArguments.dart';
 import 'package:hunted_app/screens/lobby/lobbyArguments.dart';
 import 'package:hunted_app/services/SocketService.dart';
+import 'package:hunted_app/util/CronHelper.dart';
 import 'package:location/location.dart';
 
 import 'package:hunted_app/exceptions/HTTPResponseException.dart';
@@ -66,6 +67,8 @@ class _LoginController extends State<Login> {
           joinedAsPlayer.game.id,
           joinedAsPlayer
               .playerRole); //TODO: second parameter is placeholder for when enums are available
+
+      CronHelper().initializeCron(joinedAsPlayer);
 
       if (joinedAsPlayer.game.isStarted &&
           joinedAsPlayer.game.startAt
