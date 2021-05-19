@@ -34,7 +34,8 @@ class _GameController extends State<Game> {
   Player loggedInPlayer;
   int currentIndex = 0;
 
-  Cron cron;
+  // TODO: CHANGE CRONHELPER TO SINGLETON AND SET IT HERE
+  // Cron cron;
   Socket socket;
 
   int countdownEnd = 0;
@@ -55,7 +56,7 @@ class _GameController extends State<Game> {
   }
 
   void _endGame() {
-    cron.close();
+    // cron.close();
     Navigator.of(context, rootNavigator: true)
         .pushReplacementNamed(Routes.Login);
   }
