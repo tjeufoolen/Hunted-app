@@ -21,9 +21,6 @@ jobs:
       - run: echo "APP_IDENTIFIER='${{ secrets.APP_IDENTIFIER }}'" >> .env
       - run: echo "APP_HOST='${{ secrets.APP_HOST }}'" >> .env
 
-      # Show env file (debug)
-      - run: cat .env
-
       # Install flutter
       - uses: actions/setup-java@v1
         with:
@@ -34,5 +31,8 @@ jobs:
       - run: flutter pub get
       - run: flutter build apk
 
-      # Show apks (debug)
-      - run: ls build/app/outputs/flutter-apk
+      # Release to Github
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "app-release.apk,app.apk"
+          token: ${{ secrets.GITHUB_TOKEN }}
