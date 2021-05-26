@@ -40,6 +40,9 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: "latest"
+          prerelease: true
           allowUpdates: true
+          omitNameDuringUpdate: true
+          replacesArtifacts: true
           artifacts: "build/app/outputs/flutter-apk/app.apk"
           token: ${{ secrets.GITHUB_TOKEN }}
