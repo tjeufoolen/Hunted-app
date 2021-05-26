@@ -18,7 +18,6 @@ class TreasureMarker extends CustomMarker {
     Player player = Player.fromJson(await FlutterSession().get("LoggedInPlayer"));
     SocketService socket = SocketService();
     if(player.playerRole == PlayerRolesEnum.THIEF){
-      print('this is a thief :D');
       socket.emitData('pick_up_treasure', {"playerId": player.id, "treasureId": _id});
     }
   }
