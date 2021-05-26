@@ -27,7 +27,8 @@ class _LoginController extends State<Login> {
     final LoginArguments arguments = ModalRoute.of(context).settings.arguments;
     if (arguments?.initialJoinCode != null) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        setState(() => currentInviteCode = arguments?.initialJoinCode);
+        currentInviteCode = arguments?.initialJoinCode;
+        codeController.text = currentInviteCode;
         handleLoginPressed();
       });
     }
@@ -39,6 +40,8 @@ class _LoginController extends State<Login> {
   AuthDataService authService;
   String currentInviteCode;
   SocketService socketService = SocketService();
+
+  TextEditingController codeController = TextEditingController();
 
   @override
   void initState() {
@@ -172,6 +175,7 @@ class _LoginView extends WidgetView<Login, _LoginController> {
                   onChanged: (value) {
                     state.currentInviteCode = value;
                   },
+                  controller: state.codeController,
                 ),
               ),
               Container(
