@@ -20,8 +20,7 @@ jobs:
         echo "API_URL='${{ secrets.API_URL }}' \
               GOOGLE_MAPS_API_KEY='${{ secrets.GOOGLE_MAPS_API_KEY }}' \
               APP_IDENTIFIER='${{ secrets.APP_IDENTIFIER }}' \
-              APP_HOST='${{ secrets.APP_HOST }}' \
-        " > .env
+              APP_HOST='${{ secrets.APP_HOST }}'" > .env
 
       # debug
       - run: cat .env
