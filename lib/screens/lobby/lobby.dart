@@ -67,7 +67,7 @@ class _LobbyView extends WidgetView<Lobby, _LobbyController> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Lobby - Game ${state.gameId ?? ''}"),
+        title: Text("Wachtruimte - Spel ${state.gameId ?? ''}"),
       ),
       body: Center(
         child: Column(
@@ -75,11 +75,11 @@ class _LobbyView extends WidgetView<Lobby, _LobbyController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              "Lobby",
+              "Wachtruimte",
               style: TextStyle(fontSize: 48),
             ),
             Text(
-              "Je bevind je momenteel in de lobby van game ${state.gameId ?? ''}.\nHet spel start automatisch, zodra de spelleider dit heeft aangegeven.",
+              "Je bevind je momenteel in de wachtruimte van spel ${state.gameId ?? ''}.\nHet spel start automatisch, zodra de spelleider dit heeft aangegeven.",
               style: TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
@@ -90,11 +90,11 @@ class _LobbyView extends WidgetView<Lobby, _LobbyController> {
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: "Lobby",
+            label: "Wachtruimte",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.logout),
-            label: "Back",
+            label: "Terug",
           ),
         ],
         onTap: state._bottomNavTapped,

@@ -5,7 +5,6 @@ import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:socket_io_client/socket_io_client.dart';
-import 'package:cron/cron.dart';
 
 import 'package:hunted_app/models/Player.dart';
 import 'package:hunted_app/routes/Routes.dart';
@@ -89,7 +88,7 @@ class _GameView extends WidgetView<Game, _GameController> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title:
-            Text("game ${state?.loggedInPlayer?.game?.id?.toString() ?? ''}"),
+            Text("Spel ${state?.loggedInPlayer?.game?.id?.toString() ?? ''}"),
         actions: [
           CountdownTimer(
             endTime: state.countdownEnd,
@@ -122,10 +121,10 @@ class _GameView extends WidgetView<Game, _GameController> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Game"),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Spel"),
           BottomNavigationBarItem(
             icon: Icon(Icons.logout),
-            label: "Logout",
+            label: "Uitloggen",
           )
         ],
         onTap: state._bottomNavClicked,

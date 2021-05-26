@@ -45,18 +45,20 @@ class _LoginController extends State<Login> {
               value.game.startAt.add(Duration(minutes: value.game.minutes));
 
           if (gameEnd.isBefore(DateTime.now())) {
-            handleFailedLogin("Game already ended");
+            handleFailedLogin("Het spel is al afgelopen");
             return;
           }
 
           handleSuccessfulLogin(value);
-        }).catchError((e) => handleFailedLogin(e.message),
+        }).catchError(
+            (e) => handleFailedLogin(
+                "De ingevoerde uitnodigscode kan niet gevonden worden"),
             test: (e) => e is HTTPResponseException);
         return;
       }
 
       handleFailedLogin(
-          "This application requires location permissions to function. Please enable location permissions on this device in order to continue.");
+          "Deze app heeft toegang nodig tot de gps van uw apparaat. Gelieve de app toegang te verlenen voor deze rechten in de instellingen van uw apparaat.");
     }
   }
 
@@ -90,7 +92,7 @@ class _LoginController extends State<Login> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Failed to join game"),
+            title: Text("Spel betreden mislukt"),
             content: Text(error),
             actions: [
               TextButton(
@@ -115,10 +117,10 @@ class _LoginController extends State<Login> {
   }
 
   String validateInviteToken(String value) {
-    if (value.isEmpty) return "Please enter a invite token";
+    if (value.isEmpty) return "Voer een uitnodigingscode in";
 
     RegExp matchesFormat = new RegExp('((.{5})-){7}(.{5})');
-    if (!matchesFormat.hasMatch(value)) return "Invited code is invalid";
+    if (!matchesFormat.hasMatch(value)) return "Uitnodigingscode is onjuist";
 
     return null;
   }
@@ -135,7 +137,7 @@ class _LoginView extends WidgetView<Login, _LoginController> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: Text("Login Page"),
+          title: Text("Hunted"),
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -156,8 +158,8 @@ class _LoginView extends WidgetView<Login, _LoginController> {
                   validator: (value) => state.validateInviteToken(value),
                   decoration: InputDecoration(
                       border: OutlineInputBorder(),
-                      labelText: 'Invite code',
-                      hintText: 'Enter a valid invite code'),
+                      labelText: 'Uitnodigingscode',
+                      hintText: 'Voer een uitnodigingscode in'),
                   onChanged: (value) {
                     state.currentInviteCode = value;
                   },
@@ -175,7 +177,7 @@ class _LoginView extends WidgetView<Login, _LoginController> {
                     state.handleLoginPressed();
                   },
                   child: Text(
-                    'Join Game',
+                    'Spel betreden',
                     style: TextStyle(color: Colors.white, fontSize: 25),
                   ),
                 ),
