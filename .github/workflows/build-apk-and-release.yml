@@ -15,11 +15,16 @@ jobs:
       - uses: actions/checkout@v2
 
       # Setup .env file
-      - run: touch .env
-      - run: echo "API_URL='${{ secrets.API_URL }}'" >> .env
-      - run: echo "GOOGLE_MAPS_API_KEY='${{ secrets.GOOGLE_MAPS_API_KEY }}'" >> .env 
-      - run: echo "APP_IDENTIFIER='${{ secrets.APP_IDENTIFIER }}'" >> .env
-      - run: echo "APP_HOST='${{ secrets.APP_HOST }}'" >> .env
+      - name: Generate .env
+      - run: | 
+        echo "API_URL='${{ secrets.API_URL }}' \
+              GOOGLE_MAPS_API_KEY='${{ secrets.GOOGLE_MAPS_API_KEY }}' \
+              APP_IDENTIFIER='${{ secrets.APP_IDENTIFIER }}' \
+              APP_HOST='${{ secrets.APP_HOST }}' \
+        " > .env
+
+      # debug
+      - run: cat .env
 
       # Install flutter
       - uses: actions/setup-java@v1
