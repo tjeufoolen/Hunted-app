@@ -61,6 +61,7 @@ class _GameMapController extends State<GameMap> {
     if (!_socketOnIsSetUp) {
       Socket socket = _socketService.getSocket();
       socket.on('locations', (data) => _onLocationsReceived(data));
+      socket.on('pick_up_treasure_attempt', (data) => _triggerPlayerPickUp(data));
       _socketOnIsSetUp = true;
     }
 
@@ -96,6 +97,25 @@ class _GameMapController extends State<GameMap> {
         _markers = value.toSet();
       });
     });
+  }
+
+  void _triggerPlayerPickUp(message) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Je hebt geprobeerd een schat te stelen!"),
+            content: Text(message),
+            actions: [
+              TextButton(
+                child: Text("Ok"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
   }
 
   void _onMapCreated(GoogleMapController mapController) {

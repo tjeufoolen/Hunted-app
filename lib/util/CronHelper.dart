@@ -9,7 +9,7 @@ class CronHelper {
 
   Cron initializeCron(Player loggedInPlayer) {
     Cron cron = new Cron();
-    cron.schedule(new Schedule.parse('*/30 * * * * *'), () async {
+    cron.schedule(new Schedule.parse('*/5 * * * * *'), () async {
       _location.getLocation().then((newLocation) {
         var message = {
           "id": loggedInPlayer.id,
