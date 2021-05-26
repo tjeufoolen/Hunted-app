@@ -1,0 +1,47 @@
+name: Build APK and release
+
+on: 
+  push:
+    branches:
+      - test
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Generate .env
+        run: | 
+          echo "
+          API_URL='${{ secrets.API_URL }}' 
+          GOOGLE_MAPS_API_KEY='${{ secrets.GOOGLE_MAPS_API_KEY }}' 
+          APP_IDENTIFIER='${{ secrets.APP_IDENTIFIER }}' 
+          APP_HOST='${{ secrets.APP_HOST }}'
+          " > .env
+
+      - name: Install java
+        uses: actions/setup-java@v1
+        with:
+          java-version: '12.x'
+      - name: Install flutter
+        uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '2.0.5'
+
+      - name: Build flutter 
+        run: |
+          flutter pub get
+          flutter build apk
+
+      - name: Release build to Github
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "latest"
+          prerelease: true
+          allowUpdates: true
+          omitNameDuringUpdate: true
+          replacesArtifacts: true
+          artifacts: "build/app/outputs/flutter-apk/app.apk"
+          token: ${{ secrets.GITHUB_TOKEN }}
