@@ -1,17 +1,19 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:location/location.dart';
+
 import 'package:hunted_app/routes/Routes.dart';
 import 'package:hunted_app/screens/game/gameArguments.dart';
 import 'package:hunted_app/screens/lobby/lobbyArguments.dart';
 import 'package:hunted_app/services/SocketService.dart';
 import 'package:hunted_app/util/CronHelper.dart';
-import 'package:location/location.dart';
-
 import 'package:hunted_app/exceptions/HTTPResponseException.dart';
 import 'package:hunted_app/models/Player.dart';
 import 'package:hunted_app/services/AuthDataService.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
+import 'package:hunted_app/screens/login/loginArguments.dart';
 
 // Widget
 class Login extends StatefulWidget {
@@ -21,7 +23,16 @@ class Login extends StatefulWidget {
 
 // Controller
 class _LoginController extends State<Login> {
-  Widget build(BuildContext context) => _LoginView(this);
+  Widget build(BuildContext context) {
+    final LoginArguments arguments = ModalRoute.of(context).settings.arguments;
+    if (arguments?.initialJoinCode != null) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        setState(() => currentInviteCode = arguments?.initialJoinCode);
+        handleLoginPressed();
+      });
+    }
+    return _LoginView(this);
+  }
 
   final _formKey = GlobalKey<FormState>();
 
