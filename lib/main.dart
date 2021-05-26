@@ -79,8 +79,17 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   void goToLoginWithCode(String code) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      navigatorKey.currentState
-          .pushReplacementNamed(Routes.Login, arguments: LoginArguments(code));
+      bool currentPageIsLogin = false;
+
+      navigatorKey.currentState.popUntil((route) {
+        if (route.settings.name == Routes.Login) currentPageIsLogin = true;
+        return true;
+      });
+
+      if (currentPageIsLogin) {
+        navigatorKey.currentState.pushReplacementNamed(Routes.Login,
+            arguments: LoginArguments(code));
+      }
     });
   }
 
@@ -89,14 +98,15 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Hunted',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        initialRoute: Routes.Login,
-        navigatorKey: navigatorKey,
-        debugShowCheckedModeBanner: false,
-        routes: Routes.getRoutes());
+      title: 'Hunted',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      initialRoute: Routes.Login,
+      navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: false,
+      onGenerateRoute: Routes.generateRoute,
+    );
   }
 
   void displayGlobalInfoMessage(String title, String message) {
