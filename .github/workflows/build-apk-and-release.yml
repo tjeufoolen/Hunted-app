@@ -1,0 +1,40 @@
+name: Build APK and release
+
+on: 
+  push:
+    branches:
+      - test
+      - feature/github-workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Fetch all files
+      - uses: actions/checkout@v2
+
+      # Setup .env file
+      - name: Generating .env file
+        run: |
+          touch .env \
+          echo "API_URL='${{ secrets.API_URL }}'" >> .env \
+          echo "GOOGLE_MAPS_API_KEY='${{ secrets.GOOGLE_MAPS_API_KEY }}'" >> .env \
+          echo "APP_IDENTIFIER='${{ secrets.APP_IDENTIFIER }}'" >> .env \
+          echo "APP_HOST='${{ secrets.APP_HOST }}'" >> .env \
+
+      # Show env file (debug)
+      - run: cat .env
+
+      # Install flutter
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '12.x'
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '2.0.5'
+      - run: flutter pub get
+      - run: flutter build apk
+
+      # Show apks (debug)
+      - run: ls build/app/outputs/flutter-apk
