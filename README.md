@@ -11,7 +11,7 @@ A new Flutter project.
 5. Enjoy! :tada:
 
 ## Building
-To build an apk of your app use the following command: `flutter build apk --split-per-abi`.
+To build an apk of your app use the following command: `flutter build apk`.
 
 ## Authors
 - [Micha Nijenhof](https://github.com/nijenhof)
