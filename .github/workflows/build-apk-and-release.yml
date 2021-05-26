@@ -24,9 +24,6 @@ jobs:
           APP_HOST='${{ secrets.APP_HOST }}'
           " > .env
 
-      # debug
-      - run: cat .env
-
       # Install flutter
       - uses: actions/setup-java@v1
         with:
@@ -41,5 +38,6 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           tag: "latest"
+          allowUpdates: true
           artifacts: "build/app/outputs/flutter-apk/app.apk"
           token: ${{ secrets.GITHUB_TOKEN }}
