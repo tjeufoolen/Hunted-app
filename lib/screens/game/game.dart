@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
+import 'package:hunted_app/services/SocketService.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:cron/cron.dart';
 
@@ -56,6 +57,7 @@ class _GameController extends State<Game> {
   }
 
   void _endGame() {
+    SocketService().getSocket().emit("leave_rooms");
     // cron.close();
     Navigator.of(context, rootNavigator: true)
         .pushReplacementNamed(Routes.Login);
