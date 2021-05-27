@@ -61,7 +61,7 @@ class _GameMapController extends State<GameMap> {
     if (!_socketOnIsSetUp) {
       Socket socket = _socketService.getSocket();
       socket.on('locations', (data) => _onLocationsReceived(data));
-      socket.on('pick_up_treasure_attempt', (data) => _triggerPlayerPickUp(data));
+      socket.on('pick_up_treasure_result', (data) => _triggerPlayerPickUp(data));
       _socketOnIsSetUp = true;
     }
 
@@ -104,8 +104,8 @@ class _GameMapController extends State<GameMap> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Je hebt geprobeerd een schat te stelen!"),
-            content: Text(message),
+            title: Text(message.title),
+            content: Text(message.body),
             actions: [
               TextButton(
                 child: Text("Ok"),
