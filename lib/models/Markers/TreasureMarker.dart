@@ -14,7 +14,6 @@ class TreasureMarker extends CustomMarker {
 
   @override
   Future<void> onClick() async {
-    // TODO: implement onClick
     Player player = Player.fromJson(await FlutterSession().get("LoggedInPlayer"));
     SocketService socket = SocketService();
     if(player.playerRole == PlayerRolesEnum.THIEF){
