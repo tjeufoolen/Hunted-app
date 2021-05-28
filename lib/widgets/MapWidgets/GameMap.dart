@@ -63,7 +63,6 @@ class _GameMapController extends State<GameMap> {
     if (!_socketOnIsSetUp) {
       Socket socket = _socketService.getSocket();
       socket.on('locations', (data) => _onLocationsReceived(data));
-      // socket.on('pick_up_treasure_result', (data) => print(json.decode(data)));
       socket.on('pick_up_treasure_result', (data) => _triggerPlayerPickUp(jsonDecode(data)));
       _socketOnIsSetUp = true;
     }
