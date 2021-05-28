@@ -58,7 +58,6 @@ class _GameController extends State<Game> {
 
   void _endGame() {
     SocketService().getSocket().emit("leave_rooms");
-    // cron.close();
     Navigator.of(context, rootNavigator: true)
         .pushReplacementNamed(Routes.Login);
   }
