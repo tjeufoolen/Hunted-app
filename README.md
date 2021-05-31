@@ -13,6 +13,12 @@ A new Flutter project.
 ## Building
 To build an apk of your app use the following command: `flutter build apk`.
 
+## Running
+To run using a specific url, first open a adb shell:
+`adb shell`
+Then send a command to the emulator:
+`am start -a android.intent.action.VIEW -c android.intent.category.BROWSABLE -d "huntedApp://hunted.app.com/login?code=123"`
+
 ## Authors
 - [Micha Nijenhof](https://github.com/nijenhof)
 - [Tjeu Foolen](https://github.com/tjeufoolen)
