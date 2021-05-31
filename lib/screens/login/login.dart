@@ -129,7 +129,7 @@ class _LoginController extends State<Login> {
   }
 
   String validateInviteToken(String value) {
-    if (value.isEmpty) return "Please enter a invite token";
+    if (value.trim().isEmpty) return "Please enter a invite token";
     return null;
   }
 }
