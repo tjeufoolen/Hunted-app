@@ -130,10 +130,6 @@ class _LoginController extends State<Login> {
 
   String validateInviteToken(String value) {
     if (value.isEmpty) return "Please enter a invite token";
-
-    RegExp matchesFormat = new RegExp('((.{5})-){7}(.{5})');
-    if (!matchesFormat.hasMatch(value)) return "Invited code is invalid";
-
     return null;
   }
 }
