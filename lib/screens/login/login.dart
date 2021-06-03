@@ -1,17 +1,19 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:location/location.dart';
+
 import 'package:hunted_app/routes/Routes.dart';
 import 'package:hunted_app/screens/game/gameArguments.dart';
 import 'package:hunted_app/screens/lobby/lobbyArguments.dart';
 import 'package:hunted_app/services/SocketService.dart';
 import 'package:hunted_app/util/CronHelper.dart';
-import 'package:location/location.dart';
-
 import 'package:hunted_app/exceptions/HTTPResponseException.dart';
 import 'package:hunted_app/models/Player.dart';
 import 'package:hunted_app/services/AuthDataService.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
+import 'package:hunted_app/screens/login/loginArguments.dart';
 
 // Widget
 class Login extends StatefulWidget {
@@ -21,13 +23,25 @@ class Login extends StatefulWidget {
 
 // Controller
 class _LoginController extends State<Login> {
-  Widget build(BuildContext context) => _LoginView(this);
+  Widget build(BuildContext context) {
+    final LoginArguments arguments = ModalRoute.of(context).settings.arguments;
+    if (arguments?.initialJoinCode != null) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        currentInviteCode = arguments?.initialJoinCode;
+        codeController.text = currentInviteCode;
+        handleLoginPressed();
+      });
+    }
+    return _LoginView(this);
+  }
 
   final _formKey = GlobalKey<FormState>();
 
   AuthDataService authService;
   String currentInviteCode;
   SocketService socketService = SocketService();
+
+  TextEditingController codeController = TextEditingController();
 
   @override
   void initState() {
@@ -117,11 +131,7 @@ class _LoginController extends State<Login> {
   }
 
   String validateInviteToken(String value) {
-    if (value.isEmpty) return "Voer een uitnodigingscode in";
-
-    RegExp matchesFormat = new RegExp('((.{5})-){7}(.{5})');
-    if (!matchesFormat.hasMatch(value)) return "Uitnodigingscode is onjuist";
-
+    if (value.trim().isEmpty) return "Voer een uitnodigingscode in";
     return null;
   }
 }
@@ -163,6 +173,7 @@ class _LoginView extends WidgetView<Login, _LoginController> {
                   onChanged: (value) {
                     state.currentInviteCode = value;
                   },
+                  controller: state.codeController,
                 ),
               ),
               Container(
