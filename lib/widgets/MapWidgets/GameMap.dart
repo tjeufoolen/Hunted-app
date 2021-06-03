@@ -13,8 +13,6 @@ import 'package:location/location.dart';
 import 'package:hunted_app/services/SocketService.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
-
-
 import '../WidgetView.dart';
 
 class GameMap extends StatefulWidget {
@@ -27,8 +25,6 @@ class GameMap extends StatefulWidget {
 
 // Controller
 class _GameMapController extends State<GameMap> {
-
-
   String _mapStyle;
   GoogleMapController _controller;
 
@@ -52,7 +48,7 @@ class _GameMapController extends State<GameMap> {
 
     if (currentGame != null) {
       _setGameArea(currentGame);
-      if(!_startUpLocationsSetup){
+      if (!_startUpLocationsSetup) {
         _setGameLocations(currentGame);
         _startUpLocationsSetup = true;
       }
@@ -63,7 +59,6 @@ class _GameMapController extends State<GameMap> {
       socket.on('locations', (data) => _onLocationsReceived(data));
       _socketOnIsSetUp = true;
     }
-
 
     return _GameMapView(this);
   }
@@ -77,21 +72,21 @@ class _GameMapController extends State<GameMap> {
         .loadString('assets/styles/light-map.json')
         .then((value) => _mapStyle = value);
   }
-  
-  void _onLocationsReceived(locations){
-    List<GameLocation> parsedLocations = List<GameLocation>.from(locations.toList().map((data) => GameLocation.fromJson(data)));
-    for(int i = 0; i < parsedLocations.length; i ++){
-      if(parsedLocations[i].locationType == LocationType.POLICE || parsedLocations[i].locationType == LocationType.THIEF){
-         if(parsedLocations[i].id == widget?.loggedInPlayer?.id) {
-           parsedLocations.removeAt(i);
-           break;
-         }
+
+  void _onLocationsReceived(locations) {
+    List<GameLocation> parsedLocations = List<GameLocation>.from(
+        locations.toList().map((data) => GameLocation.fromJson(data)));
+    for (int i = 0; i < parsedLocations.length; i++) {
+      if (parsedLocations[i].locationType == LocationType.POLICE ||
+          parsedLocations[i].locationType == LocationType.THIEF) {
+        if (parsedLocations[i].id == widget?.loggedInPlayer?.id) {
+          parsedLocations.removeAt(i);
+          break;
+        }
       }
     }
 
-    MarkerFactory()
-        .createAll(parsedLocations)
-        .then((value) {
+    MarkerFactory().createAll(parsedLocations).then((value) {
       setState(() {
         _markers = value.toSet();
       });
@@ -136,8 +131,9 @@ class _GameMapController extends State<GameMap> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("Leaving gamearea!"),
-              content: Text("Turn back immediately"),
+              title: Text("Spel verlaten!"),
+              content: Text(
+                  "Je bent voorbij het spelgebied, gelieve terug te keren!"),
               actions: [
                 TextButton(
                   child: Text("Ok"),
