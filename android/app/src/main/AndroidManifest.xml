@@ -44,7 +44,7 @@
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data
-          android:scheme="@string/APP_IDENTIFIER"
+          android:scheme="https"
           android:host="@string/APP_HOST" />
       </intent-filter>
 	</activity>
