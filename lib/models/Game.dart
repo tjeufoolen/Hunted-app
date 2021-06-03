@@ -1,23 +1,48 @@
+import 'package:hunted_app/models/GameLocation.dart';
+
 class Game {
   final int id;
-  final int userId;
   final DateTime startAt;
+  final bool isStarted;
   final int minutes;
+  final List<GameLocation> gameLocations;
+  final num gameAreaLatitude;
+  final num gameAreaLongitude;
+  final num gameAreaRadius;
 
-  Game({this.id, this.userId, this.startAt, this.minutes});
+  Game({
+    this.id,
+    this.startAt,
+    this.isStarted,
+    this.minutes,
+    this.gameLocations,
+    this.gameAreaLatitude,
+    this.gameAreaLongitude,
+    this.gameAreaRadius,
+  });
 
   factory Game.fromJson(Map<String, dynamic> json) {
     return Game(
         id: json['id'],
-        userId: json['userId'],
         startAt: DateTime.parse(json['startAt']),
-        minutes: json['minutes']);
+        isStarted: json['isStarted'],
+        minutes: json['minutes'],
+        gameAreaLatitude: json['gameAreaLatitude'],
+        gameAreaLongitude: json['gameAreaLongitude'],
+        gameAreaRadius: json['gameAreaRadius'],
+        gameLocations: List<GameLocation>.from(json["gameLocations"]
+            .toList()
+            .map((data) => GameLocation.fromJson(data))));
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'userId': userId,
         'startAt': startAt.toIso8601String(),
+        'isStarted': isStarted,
         'minutes': minutes,
+        'gameAreaLatitude': gameAreaLatitude,
+        'gameAreaLongitude': gameAreaLongitude,
+        'gameAreaRadius': gameAreaRadius,
+        'gameLocations': gameLocations.map((obj) => obj.toJson()).toList()
       };
 }

@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
-import 'package:flutter_session/flutter_session.dart';
+import 'package:hunted_app/util/CronHelper.dart';
+import 'package:hunted_app/services/SocketService.dart';
+import 'package:socket_io_client/socket_io_client.dart';
+
 import 'package:hunted_app/models/Player.dart';
+import 'package:hunted_app/routes/Routes.dart';
+import 'package:hunted_app/routes/GameRoutes.dart';
+import 'package:hunted_app/screens/game/gameArguments.dart';
 import 'package:hunted_app/widgets/WidgetView.dart';
+
+import 'mapScreenArguments.dart';
 
 // Widget
 class Game extends StatefulWidget {
@@ -14,8 +24,20 @@ class Game extends StatefulWidget {
 
 // Controller
 class _GameController extends State<Game> {
-  Widget build(BuildContext context) => _GameView(this);
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey();
+
+  Widget build(BuildContext context) {
+    final GameArguments arguments = ModalRoute.of(context).settings.arguments;
+    loggedInPlayer = arguments.loggedInPlayer;
+    return _GameView(this);
+  }
+
   Player loggedInPlayer;
+  int currentIndex = 0;
+
+  // TODO: CHANGE CRONHELPER TO SINGLETON AND SET IT HERE
+  // Cron cron;
+  Socket socket;
 
   int countdownEnd = 0;
   CountdownTimerController countdownController;
@@ -23,10 +45,8 @@ class _GameController extends State<Game> {
   @override
   void initState() {
     super.initState();
-
-    _loadPlayer().then((player) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
       setState(() {
-        loggedInPlayer = player;
         countdownEnd = loggedInPlayer.game.startAt
             .add(Duration(minutes: loggedInPlayer.game.minutes))
             .millisecondsSinceEpoch;
@@ -37,11 +57,27 @@ class _GameController extends State<Game> {
   }
 
   void _endGame() {
-    Navigator.pushReplacementNamed(context, '/login');
+    CronHelper().LocationSentCronJob.close();
+    SocketService().getSocket().emit("leave_rooms");
+    Navigator.of(context, rootNavigator: true)
+        .pushReplacementNamed(Routes.Login);
   }
 
-  Future<Player> _loadPlayer() async {
-    return Player.fromJson(await FlutterSession().get("LoggedInPlayer"));
+  void _bottomNavClicked(int index) {
+    if (currentIndex != index) {
+      switch (index) {
+        case 0:
+          currentIndex = 0;
+          navigatorKey.currentState.pushNamed(GameRoutes.GameMapScreen,
+              arguments: MapScreenArguments(loggedInPlayer));
+          break;
+        case 1:
+          currentIndex = 1;
+          _endGame();
+          break;
+        default:
+      }
+    }
   }
 }
 
@@ -51,19 +87,11 @@ class _GameView extends WidgetView<Game, _GameController> {
   const _GameView(this.state) : super(state);
 
   Widget build(BuildContext context) {
-    String _formatNumber(int number) {
-      if (number == null) return "00";
-      if (number < 10) {
-        return "0" + number.toString();
-      }
-      return number.toString();
-    }
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title:
-            Text("game ${state?.loggedInPlayer?.game?.id?.toString() ?? ''}"),
+            Text("Spel ${state?.loggedInPlayer?.game?.id?.toString() ?? ''}"),
         actions: [
           CountdownTimer(
             endTime: state.countdownEnd,
@@ -82,12 +110,36 @@ class _GameView extends WidgetView<Game, _GameController> {
           ),
         ],
       ),
-      body: Center(
-        child: Text(
-          "Game ${state?.loggedInPlayer?.game?.id?.toString() ?? ''}",
-          style: TextStyle(fontSize: 48),
-        ),
+      body: Navigator(
+        key: state.navigatorKey,
+        initialRoute: GameRoutes.GameMapScreen,
+        onGenerateInitialRoutes: (navigator, initialRoute) {
+          return [
+            navigator.widget.onGenerateRoute(RouteSettings(
+                name: GameRoutes.GameMapScreen,
+                arguments: MapScreenArguments(state.loggedInPlayer)))
+          ];
+        },
+        onGenerateRoute: GameRoutes.generateRoute,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Spel"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.logout),
+            label: "Uitloggen",
+          )
+        ],
+        onTap: state._bottomNavClicked,
       ),
     );
+  }
+
+  String _formatNumber(int number) {
+    if (number == null) return "00";
+    if (number < 10) {
+      return "0" + number.toString();
+    }
+    return number.toString();
   }
 }
