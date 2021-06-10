@@ -106,7 +106,7 @@ class _GameMapController extends State<GameMap> {
   void _updatePlayerMarkers() {
     _gameLocations.remove(widget.loggedInPlayer?.id);
 
-    MarkerFactory().createAll(_gameLocations.values).then((value) {
+    MarkerFactory().createAll(_gameLocations.values.toList()).then((value) {
       setState(() {
         _markers = value.toSet();
       });
