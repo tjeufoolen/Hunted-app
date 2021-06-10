@@ -31,7 +31,8 @@ class _GameMapController extends State<GameMap> {
   Location _location = Location();
   SocketService _socketService = SocketService();
 
-  Map<int, GameLocation> _gameLocations = Map();
+  Map<int, GameLocation> _globalGameLocations = Map();
+  Map<int, GameLocation> _nearbyGameLocations = Map();
 
   Set<Marker> _markers = {};
   Set<Circle> _gameAreas = {};
@@ -86,30 +87,32 @@ class _GameMapController extends State<GameMap> {
   }
 
   void _onLocationsReceived(locations, {isNearby = false}) {
-    var parsedLocations = List<GameLocation>.from(
-        locations.toList().map((data) => GameLocation.fromJson(data)));
+    Map<int, GameLocation> gameLocations = Map.fromIterable(
+      locations.toList().map((data) => GameLocation.fromJson(data)),
+      key: (e) => e.id,
+      value: (e) => e,
+    );
 
     if (isNearby) {
-      // Only place the newly received player gamelocations in t
-      parsedLocations.forEach((playerLocation) {
-        _gameLocations[playerLocation.id] = playerLocation;
-      });
+      _nearbyGameLocations = gameLocations;
     } else {
-      // As all locations are received, the entire map can be replaced
-      _gameLocations =
-          Map.fromIterable(parsedLocations, key: (e) => e.id, value: (e) => e);
+      _globalGameLocations = gameLocations;
     }
 
     _updatePlayerMarkers();
   }
 
   void _updatePlayerMarkers() {
-    _gameLocations.remove(widget.loggedInPlayer?.id);
+    // Merge global and nearby game locations together.
+    Map<int, GameLocation> gameLocations = {..._globalGameLocations};
+    _nearbyGameLocations.forEach((key, value) => gameLocations[key] = value);
 
-    MarkerFactory().createAll(_gameLocations.values.toList()).then((value) {
-      setState(() {
-        _markers = value.toSet();
-      });
+    // Remove own gameLocation from all
+    gameLocations.remove(widget.loggedInPlayer?.id);
+
+    // Create/Replace markers and update view
+    MarkerFactory().createAll(gameLocations.values.toList()).then((value) {
+      setState(() => _markers = value.toSet());
     });
   }
 

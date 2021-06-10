@@ -11,7 +11,7 @@ class CronHelper {
 
   void initializeCron(Player loggedInPlayer) {
     locationSentCronJob = new Cron();
-    locationSentCronJob.schedule(new Schedule.parse('*/30 * * * * *'),
+    locationSentCronJob.schedule(new Schedule.parse('*/15 * * * * *'),
         () async {
       _location.getLocation().then((newLocation) {
         var message = {
