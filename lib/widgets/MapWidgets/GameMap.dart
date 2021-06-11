@@ -147,6 +147,7 @@ class _GameMapController extends State<GameMap> {
     _location.onLocationChanged().listen((LocationData newLocation) {
       _playerPosition = LatLng(newLocation.latitude, newLocation.longitude);
       _checkIfPlayerOutsideOfGame();
+      _drawNearbyPlayersCircle();
     });
   }
 
@@ -164,6 +165,23 @@ class _GameMapController extends State<GameMap> {
         _triggerPlayerOutsideOfGame();
       }
     }
+  }
+
+  void _drawNearbyPlayersCircle() {
+    String identifier = "nearbyPlayerCircle";
+    _gameAreas
+        .removeWhere((element) => element.circleId == CircleId(identifier));
+
+    setState(() {
+      _gameAreas.add(
+        Circle(
+            circleId: CircleId(identifier),
+            center: _playerPosition,
+            radius: 200, //TODO: <- CHANGE THIS TO VALUE FROM WEBPORTAL
+            fillColor: ColorHelper.nearbyPlayersCircleFill,
+            strokeWidth: 0),
+      );
+    });
   }
 
   void _triggerPlayerOutsideOfGame() {
@@ -201,13 +219,14 @@ class _GameMapController extends State<GameMap> {
   }
 
   void _setGameArea(Game currentGame) {
+    String identifier = "gameArea";
     bool gameHasLatitude = currentGame.gameAreaLatitude != null;
     bool gameHasLongitude = currentGame.gameAreaLongitude != null;
     bool gameHasAreaRadius = currentGame.gameAreaRadius != null;
 
     if (gameHasLatitude && gameHasLongitude && gameHasAreaRadius) {
       _gameArea = Circle(
-        circleId: CircleId('gameArea'),
+        circleId: CircleId(identifier),
         center:
             LatLng(currentGame.gameAreaLatitude, currentGame.gameAreaLongitude),
         radius: currentGame.gameAreaRadius.toDouble(),
@@ -216,8 +235,11 @@ class _GameMapController extends State<GameMap> {
         fillColor: ColorHelper.gameAreaFill,
       );
 
+      _gameAreas
+          .removeWhere((element) => element.circleId == CircleId(identifier));
+
       setState(() {
-        _gameAreas = {_gameArea};
+        _gameAreas.add(_gameArea);
       });
     }
   }
