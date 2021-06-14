@@ -82,7 +82,8 @@ class _LoginController extends State<Login> {
       socketService.initializeSocket(
           joinedAsPlayer.game.id,
           joinedAsPlayer
-              .playerRole); //TODO: second parameter is placeholder for when enums are available
+              .playerRole,
+              joinedAsPlayer.id); //TODO: second parameter is placeholder for when enums are available
 
       CronHelper().initializeCron(joinedAsPlayer);
 
