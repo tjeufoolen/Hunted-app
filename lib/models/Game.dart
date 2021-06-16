@@ -9,17 +9,18 @@ class Game {
   final num gameAreaLatitude;
   final num gameAreaLongitude;
   final num gameAreaRadius;
+  final num distanceThiefPolice;
 
-  Game({
-    this.id,
-    this.startAt,
-    this.isStarted,
-    this.minutes,
-    this.gameLocations,
-    this.gameAreaLatitude,
-    this.gameAreaLongitude,
-    this.gameAreaRadius,
-  });
+  Game(
+      {this.id,
+      this.startAt,
+      this.isStarted,
+      this.minutes,
+      this.gameLocations,
+      this.gameAreaLatitude,
+      this.gameAreaLongitude,
+      this.gameAreaRadius,
+      this.distanceThiefPolice});
 
   factory Game.fromJson(Map<String, dynamic> json) {
     return Game(
@@ -30,6 +31,7 @@ class Game {
         gameAreaLatitude: json['gameAreaLatitude'],
         gameAreaLongitude: json['gameAreaLongitude'],
         gameAreaRadius: json['gameAreaRadius'],
+        distanceThiefPolice: json['distanceThiefPolice'],
         gameLocations: List<GameLocation>.from(json["gameLocations"]
             .toList()
             .map((data) => GameLocation.fromJson(data))));
@@ -43,6 +45,7 @@ class Game {
         'gameAreaLatitude': gameAreaLatitude,
         'gameAreaLongitude': gameAreaLongitude,
         'gameAreaRadius': gameAreaRadius,
+        'distanceThiefPolice': distanceThiefPolice,
         'gameLocations': gameLocations.map((obj) => obj.toJson()).toList()
       };
 }

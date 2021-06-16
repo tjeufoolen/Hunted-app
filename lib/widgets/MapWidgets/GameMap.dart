@@ -38,6 +38,8 @@ class _GameMapController extends State<GameMap> {
   Set<Circle> _gameAreas = {};
   Circle _gameArea;
 
+  num _playerDistanceRadius = 200;
+
   bool _gameAreaDialogIsShowing = false;
   bool _socketOnIsSetUp = false;
   bool _startUpLocationsSetup = false;
@@ -50,6 +52,8 @@ class _GameMapController extends State<GameMap> {
     final Game currentGame = widget?.loggedInPlayer?.game;
 
     if (currentGame != null) {
+      _playerDistanceRadius = currentGame.distanceThiefPolice;
+
       _setGameArea(currentGame);
       if (!_startUpLocationsSetup) {
         _setGameLocations(currentGame);
@@ -177,7 +181,7 @@ class _GameMapController extends State<GameMap> {
         Circle(
             circleId: CircleId(identifier),
             center: _playerPosition,
-            radius: 200, //TODO: <- CHANGE THIS TO VALUE FROM WEBPORTAL
+            radius: _playerDistanceRadius,
             fillColor: ColorHelper.nearbyPlayersCircleFill,
             strokeWidth: 0),
       );
