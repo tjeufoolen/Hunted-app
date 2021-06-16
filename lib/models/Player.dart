@@ -36,5 +36,5 @@ class Player {
 
 enum PlayerRolesEnum {
   POLICE,
-  THIEF
+  THIEF,
 }

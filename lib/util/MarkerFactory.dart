@@ -25,7 +25,7 @@ class MarkerFactory {
         futureMarker = PoliceMarker(newMarkerId(), location);
         break;
       case LocationType.THIEF:
-        futureMarker = ThiefMarker(newMarkerId(), location);
+        futureMarker = ThiefMarker(newMarkerId(), location, id);
         break;
       default:
         return null;

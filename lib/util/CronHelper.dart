@@ -7,14 +7,16 @@ class CronHelper {
   static final CronHelper _instance = CronHelper._internal();
   Location _location = new Location();
   SocketService _socketService = new SocketService();
-  Cron LocationSentCronJob;
+  Cron locationSentCronJob;
 
-  Cron initializeCron(Player loggedInPlayer) {
-    LocationSentCronJob = new Cron();
-    LocationSentCronJob.schedule(new Schedule.parse('*/30 * * * * *'), () async {
+  void initializeCron(Player loggedInPlayer) {
+    locationSentCronJob = new Cron();
+    locationSentCronJob.schedule(new Schedule.parse('*/15 * * * * *'),
+        () async {
       _location.getLocation().then((newLocation) {
         var message = {
           "id": loggedInPlayer.id,
+          "gameId": loggedInPlayer.game.id,
           "latitude": newLocation.latitude,
           "longitude": newLocation.longitude
         };
@@ -29,4 +31,3 @@ class CronHelper {
 
   CronHelper._internal();
 }
-
