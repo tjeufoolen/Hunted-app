@@ -31,8 +31,8 @@ class _GameMapController extends State<GameMap> {
   Location _location = Location();
   SocketService _socketService = SocketService();
 
-  Map<int, GameLocation> _globalGameLocations = Map();
-  Map<int, GameLocation> _nearbyGameLocations = Map();
+  Map<String, GameLocation> _globalGameLocations = Map();
+  Map<String, GameLocation> _nearbyGameLocations = Map();
 
   Set<Marker> _markers = {};
   Set<Circle> _gameAreas = {};
@@ -58,7 +58,12 @@ class _GameMapController extends State<GameMap> {
 
       _setGameArea(currentGame);
       if (!_startUpLocationsSetup) {
-        _setGameLocations(currentGame);
+        _globalGameLocations = Map.fromIterable(
+          currentGame.gameLocations,
+          key: (e) => e.id.toString() + "-" + e.locationType.toString(),
+          value: (e) => e,
+        );
+        _updateMarkers();
         _startUpLocationsSetup = true;
       }
     }
@@ -99,9 +104,9 @@ class _GameMapController extends State<GameMap> {
   }
 
   void _onLocationsReceived(locations, {isNearby = false}) {
-    Map<int, GameLocation> gameLocations = Map.fromIterable(
+    Map<String, GameLocation> gameLocations = Map.fromIterable(
       locations.toList().map((data) => GameLocation.fromJson(data)),
-      key: (e) => e.id,
+      key: (e) => e.id.toString() + "-" + e.locationType.toString(),
       value: (e) => e,
     );
 
@@ -111,16 +116,13 @@ class _GameMapController extends State<GameMap> {
       _globalGameLocations = gameLocations;
     }
 
-    _updatePlayerMarkers();
+    _updateMarkers();
   }
 
-  void _updatePlayerMarkers() {
+  void _updateMarkers() {
     // Merge global and nearby game locations together.
-    Map<int, GameLocation> gameLocations = {..._globalGameLocations};
+    Map<String, GameLocation> gameLocations = {..._globalGameLocations};
     _nearbyGameLocations.forEach((key, value) => gameLocations[key] = value);
-
-    // Remove own gameLocation from all
-    gameLocations.remove(widget.loggedInPlayer?.id);
 
     // Create/Replace markers and update view
     MarkerFactory().createAll(gameLocations.values.toList()).then((value) {
@@ -221,24 +223,6 @@ class _GameMapController extends State<GameMap> {
               ],
             );
           });
-    }
-  }
-
-  void _setGameLocations(Game currentGame) {
-    if (currentGame?.gameLocations != null) {
-      _globalGameLocations = Map.fromIterable(
-        currentGame.gameLocations
-            .toList()
-            .map((data) => GameLocation.fromJson(data)),
-        key: (e) => e.id,
-        value: (e) => e,
-      );
-
-      MarkerFactory().createAll(currentGame.gameLocations).then((value) {
-        setState(() {
-          _markers = value.toSet();
-        });
-      });
     }
   }
 
