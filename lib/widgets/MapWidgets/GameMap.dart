@@ -44,6 +44,8 @@ class _GameMapController extends State<GameMap> {
   bool _socketOnIsSetUp = false;
   bool _startUpLocationsSetup = false;
 
+  Socket socket;
+
   // Only used for initial loading, will be replaced as soon as user location is fetched.
   LatLng _playerPosition = LatLng(51.6978162, 5.3036748);
 
@@ -62,7 +64,7 @@ class _GameMapController extends State<GameMap> {
     }
 
     if (!_socketOnIsSetUp) {
-      Socket socket = _socketService.getSocket();
+      socket = _socketService.getSocket();
 
       socket.on('locations', (data) {
         _onLocationsReceived(data, isNearby: false);
@@ -78,6 +80,12 @@ class _GameMapController extends State<GameMap> {
     }
 
     return _GameMapView(this);
+  }
+
+  @override
+  void dispose() {
+    socket?.dispose();
+    super.dispose();
   }
 
   @override
@@ -116,7 +124,9 @@ class _GameMapController extends State<GameMap> {
 
     // Create/Replace markers and update view
     MarkerFactory().createAll(gameLocations.values.toList()).then((value) {
-      setState(() => _markers = value.toSet());
+      if (this.mounted) {
+        setState(() => _markers = value.toSet());
+      }
     });
   }
 
@@ -176,16 +186,18 @@ class _GameMapController extends State<GameMap> {
     _gameAreas
         .removeWhere((element) => element.circleId == CircleId(identifier));
 
-    setState(() {
-      _gameAreas.add(
-        Circle(
-            circleId: CircleId(identifier),
-            center: _playerPosition,
-            radius: _playerDistanceRadius.toDouble(),
-            fillColor: ColorHelper.nearbyPlayersCircleFill,
-            strokeWidth: 0),
-      );
-    });
+    if (mounted) {
+      setState(() {
+        _gameAreas.add(
+          Circle(
+              circleId: CircleId(identifier),
+              center: _playerPosition,
+              radius: _playerDistanceRadius.toDouble(),
+              fillColor: ColorHelper.nearbyPlayersCircleFill,
+              strokeWidth: 0),
+        );
+      });
+    }
   }
 
   void _triggerPlayerOutsideOfGame() {
@@ -214,6 +226,14 @@ class _GameMapController extends State<GameMap> {
 
   void _setGameLocations(Game currentGame) {
     if (currentGame?.gameLocations != null) {
+      _globalGameLocations = Map.fromIterable(
+        currentGame.gameLocations
+            .toList()
+            .map((data) => GameLocation.fromJson(data)),
+        key: (e) => e.id,
+        value: (e) => e,
+      );
+
       MarkerFactory().createAll(currentGame.gameLocations).then((value) {
         setState(() {
           _markers = value.toSet();
