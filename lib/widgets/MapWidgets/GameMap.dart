@@ -181,7 +181,7 @@ class _GameMapController extends State<GameMap> {
         Circle(
             circleId: CircleId(identifier),
             center: _playerPosition,
-            radius: _playerDistanceRadius,
+            radius: _playerDistanceRadius.toDouble(),
             fillColor: ColorHelper.nearbyPlayersCircleFill,
             strokeWidth: 0),
       );

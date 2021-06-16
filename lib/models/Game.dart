@@ -9,7 +9,7 @@ class Game {
   final num gameAreaLatitude;
   final num gameAreaLongitude;
   final num gameAreaRadius;
-  final num distanceThiefPolice;
+  final int distanceThiefPolice;
 
   Game(
       {this.id,
