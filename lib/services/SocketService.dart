@@ -6,8 +6,6 @@ class SocketService {
   static final SocketService _instance = SocketService._internal();
 
   Socket _socket;
-
-  // TODO move to a constructor
   Socket initializeSocket(gameId, playerType, playerId) {
     _socket = io(
         FlutterConfig.get('API_URL'),
@@ -24,7 +22,6 @@ class SocketService {
         _socket.emit('join_room', "police_" + gameId.toString());
       } else if (playerType == PlayerRolesEnum.THIEF) {
         _socket.emit('join_room', "thiefs_" + gameId.toString());
-        print("thief_" + playerId.toString());
         _socket.emit('join_room', "thief_" + playerId.toString());
       }
     });
