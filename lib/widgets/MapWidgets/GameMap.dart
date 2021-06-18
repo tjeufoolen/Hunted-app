@@ -67,7 +67,15 @@ class _GameMapController extends State<GameMap> {
         _onLocationsReceived(data, isNearby: true);
       });
       socket.on('pick_up_treasure_result', (data) {
-        _triggerPlayerPickUp(jsonDecode(data));
+        _triggerBasicPopUp(jsonDecode(data));
+      });
+
+      socket.on('arrest_thief_result', (data) {
+        _triggerBasicPopUp(jsonDecode(data));
+      });
+
+      socket.on('thief_catch_result', (data) {
+        _triggerBasicPopUp(jsonDecode(data));
       });
 
       _socketOnIsSetUp = true;
@@ -116,7 +124,7 @@ class _GameMapController extends State<GameMap> {
     });
   }
 
-  void _triggerPlayerPickUp(message) {
+  void _triggerBasicPopUp(message) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
