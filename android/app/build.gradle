@@ -25,6 +25,16 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
+project.ext.envConfigFiles = [
+        developdebug: ".env",
+        developrelease: ".env",
+        stagingdebug: ".env",
+        stagingrelease: ".env",
+        productiondebug: ".env",
+        productionrelease: ".env",
+]
+apply from: project(':flutter_config').projectDir.getPath() + "/dotenv.gradle"
+
 android {
     compileSdkVersion 30
 

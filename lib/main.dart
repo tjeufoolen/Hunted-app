@@ -1,119 +1,133 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hunted_app/models/prototype.dart';
-import 'package:hunted_app/services/dataservice.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_config/flutter_config.dart';
+import 'package:hunted_app/screens/login/loginArguments.dart';
+import 'package:uni_links/uni_links.dart';
+import 'package:hunted_app/routes/Routes.dart';
+
+bool _initialUriIsHandled = false;
 
 Future main() async {
-  await DotEnv.load(fileName: ".env");
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterConfig.loadEnvVariables();
+  await SystemChrome.setPreferredOrientations(
+    [DeviceOrientation.portraitUp],
+  );
+
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+class MyApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+  _MyAppState createState() => _MyAppState();
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  Future<Prototype> prototype;
+class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey();
+  StreamSubscription _sub;
 
   @override
   void initState() {
     super.initState();
-    prototype = DataService().fetchPrototypes();
-  }
-
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+    _handleIncomingLinks();
+    _handleInitialUri();
   }
 
   @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  void _handleIncomingLinks() {
+    if (!kIsWeb) {
+      _sub = getUriLinksStream().listen((Uri uri) {
+        if (!mounted) return;
+        final code = extractCodeFromUri(uri);
+        if (code == null) return;
+
+        goToLoginWithCode(code);
+      }, onError: (Object err) {
+        if (!mounted) return;
+        displayGlobalInfoMessage(
+            "Fout melding!", "Oh nee, er iets iets fout gegaan: " + err);
+      });
+    }
+  }
+
+  Future<void> _handleInitialUri() async {
+    if (!_initialUriIsHandled) {
+      _initialUriIsHandled = true;
+      try {
+        final uri = await getInitialUri();
+        if (uri != null) {
+          final code = extractCodeFromUri(uri);
+          if (code == null) return;
+          goToLoginWithCode(code);
+        }
+        if (!mounted) return;
+      } on PlatformException {} on FormatException {
+        if (!mounted) return;
+        displayGlobalInfoMessage(
+            "Foute URL", "De opgegeven URL is helaas niet juist.");
+      }
+    }
+  }
+
+  void goToLoginWithCode(String code) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      bool currentPageIsLogin = false;
+
+      navigatorKey.currentState.popUntil((route) {
+        if (route.settings.name == Routes.Login) currentPageIsLogin = true;
+        return true;
+      });
+
+      if (currentPageIsLogin) {
+        navigatorKey.currentState.pushReplacementNamed(Routes.Login,
+            arguments: LoginArguments(code));
+      }
+    });
+  }
+
+  String extractCodeFromUri(Uri uri) => uri.queryParameters['code'];
+
+  @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+    return MaterialApp(
+      title: 'Hunted',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            FutureBuilder<Prototype>(
-                future: prototype,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Column(children: [
-                      Text(snapshot.data.id.toString()),
-                      Text(snapshot.data.text),
-                      Text(snapshot.data.price),
-                    ]);
-                  } else if (snapshot.hasError) {
-                    return Text("${snapshot.error}");
-                  } else {
-                    return Text("No data and no error!?");
-                  }
-                })
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      initialRoute: Routes.Login,
+      navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: false,
+      onGenerateRoute: Routes.generateRoute,
     );
+  }
+
+  void displayGlobalInfoMessage(String title, String message) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                child: Text("Ok"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        },
+      );
+    });
   }
 }
