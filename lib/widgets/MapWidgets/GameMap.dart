@@ -1,11 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hunted_app/models/GameLocation.dart';
-import 'package:hunted_app/models/LocationTypeEnum.dart';
 import 'package:hunted_app/util/ColorHelper.dart';
 import 'package:maps_toolkit/maps_toolkit.dart' as maptoolkit;
 import 'package:hunted_app/models/Game.dart';
@@ -33,13 +31,20 @@ class _GameMapController extends State<GameMap> {
   Location _location = Location();
   SocketService _socketService = SocketService();
 
+  Map<String, GameLocation> _globalGameLocations = Map();
+  Map<String, GameLocation> _nearbyGameLocations = Map();
+
   Set<Marker> _markers = {};
   Set<Circle> _gameAreas = {};
   Circle _gameArea;
 
+  num _playerDistanceRadius = 200;
+
   bool _gameAreaDialogIsShowing = false;
   bool _socketOnIsSetUp = false;
   bool _startUpLocationsSetup = false;
+
+  Socket socket;
 
   // Only used for initial loading, will be replaced as soon as user location is fetched.
   LatLng _playerPosition = LatLng(51.6978162, 5.3036748);
@@ -49,21 +54,51 @@ class _GameMapController extends State<GameMap> {
     final Game currentGame = widget?.loggedInPlayer?.game;
 
     if (currentGame != null) {
+      _playerDistanceRadius = currentGame.distanceThiefPolice;
+
       _setGameArea(currentGame);
       if (!_startUpLocationsSetup) {
-        _setGameLocations(currentGame);
+        _globalGameLocations = Map.fromIterable(
+          currentGame.gameLocations,
+          key: (e) => e.id.toString() + "-" + e.locationType.toString(),
+          value: (e) => e,
+        );
+        _updateMarkers();
         _startUpLocationsSetup = true;
       }
     }
 
     if (!_socketOnIsSetUp) {
-      Socket socket = _socketService.getSocket();
-      socket.on('locations', (data) => _onLocationsReceived(data));
-      socket.on('pick_up_treasure_result', (data) => _triggerPlayerPickUp(jsonDecode(data)));
+      socket = _socketService.getSocket();
+
+      socket.on('locations', (data) {
+        _onLocationsReceived(data, isNearby: false);
+      });
+      socket.on('nearby_locations_update', (data) {
+        _onLocationsReceived(data, isNearby: true);
+      });
+      socket.on('pick_up_treasure_result', (data) {
+        _triggerBasicPopUp(jsonDecode(data));
+      });
+
+      socket.on('arrest_thief_result', (data) {
+        _triggerBasicPopUp(jsonDecode(data));
+      });
+
+      socket.on('thief_catch_result', (data) {
+        _triggerBasicPopUp(jsonDecode(data));
+      });
+
       _socketOnIsSetUp = true;
     }
 
     return _GameMapView(this);
+  }
+
+  @override
+  void dispose() {
+    socket?.dispose();
+    super.dispose();
   }
 
   @override
@@ -76,27 +111,36 @@ class _GameMapController extends State<GameMap> {
         .then((value) => _mapStyle = value);
   }
 
-  void _onLocationsReceived(locations) {
-    List<GameLocation> parsedLocations = List<GameLocation>.from(
-        locations.toList().map((data) => GameLocation.fromJson(data)));
-    for (int i = 0; i < parsedLocations.length; i++) {
-      if (parsedLocations[i].locationType == LocationType.POLICE ||
-          parsedLocations[i].locationType == LocationType.THIEF) {
-        if (parsedLocations[i].id == widget?.loggedInPlayer?.id) {
-          parsedLocations.removeAt(i);
-          break;
-        }
-      }
+  void _onLocationsReceived(locations, {isNearby = false}) {
+    Map<String, GameLocation> gameLocations = Map.fromIterable(
+      locations.toList().map((data) => GameLocation.fromJson(data)),
+      key: (e) => e.id.toString() + "-" + e.locationType.toString(),
+      value: (e) => e,
+    );
+
+    if (isNearby) {
+      _nearbyGameLocations = gameLocations;
+    } else {
+      _globalGameLocations = gameLocations;
     }
 
-    MarkerFactory().createAll(parsedLocations).then((value) {
-      setState(() {
-        _markers = value.toSet();
-      });
+    _updateMarkers();
+  }
+
+  void _updateMarkers() {
+    // Merge global and nearby game locations together.
+    Map<String, GameLocation> gameLocations = {..._globalGameLocations};
+    _nearbyGameLocations.forEach((key, value) => gameLocations[key] = value);
+
+    // Create/Replace markers and update view
+    MarkerFactory().createAll(gameLocations.values.toList()).then((value) {
+      if (this.mounted) {
+        setState(() => _markers = value.toSet());
+      }
     });
   }
 
-  void _triggerPlayerPickUp(message) {
+  void _triggerBasicPopUp(message) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -127,6 +171,7 @@ class _GameMapController extends State<GameMap> {
     _location.onLocationChanged().listen((LocationData newLocation) {
       _playerPosition = LatLng(newLocation.latitude, newLocation.longitude);
       _checkIfPlayerOutsideOfGame();
+      _drawNearbyPlayersCircle();
     });
   }
 
@@ -143,6 +188,25 @@ class _GameMapController extends State<GameMap> {
           range) {
         _triggerPlayerOutsideOfGame();
       }
+    }
+  }
+
+  void _drawNearbyPlayersCircle() {
+    String identifier = "nearbyPlayerCircle";
+    _gameAreas
+        .removeWhere((element) => element.circleId == CircleId(identifier));
+
+    if (mounted) {
+      setState(() {
+        _gameAreas.add(
+          Circle(
+              circleId: CircleId(identifier),
+              center: _playerPosition,
+              radius: _playerDistanceRadius.toDouble(),
+              fillColor: ColorHelper.nearbyPlayersCircleFill,
+              strokeWidth: 0),
+        );
+      });
     }
   }
 
@@ -170,24 +234,15 @@ class _GameMapController extends State<GameMap> {
     }
   }
 
-  void _setGameLocations(Game currentGame) {
-    if (currentGame?.gameLocations != null) {
-      MarkerFactory().createAll(currentGame.gameLocations).then((value) {
-        setState(() {
-          _markers = value.toSet();
-        });
-      });
-    }
-  }
-
   void _setGameArea(Game currentGame) {
+    String identifier = "gameArea";
     bool gameHasLatitude = currentGame.gameAreaLatitude != null;
     bool gameHasLongitude = currentGame.gameAreaLongitude != null;
     bool gameHasAreaRadius = currentGame.gameAreaRadius != null;
 
     if (gameHasLatitude && gameHasLongitude && gameHasAreaRadius) {
       _gameArea = Circle(
-        circleId: CircleId('gameArea'),
+        circleId: CircleId(identifier),
         center:
             LatLng(currentGame.gameAreaLatitude, currentGame.gameAreaLongitude),
         radius: currentGame.gameAreaRadius.toDouble(),
@@ -196,8 +251,11 @@ class _GameMapController extends State<GameMap> {
         fillColor: ColorHelper.gameAreaFill,
       );
 
+      _gameAreas
+          .removeWhere((element) => element.circleId == CircleId(identifier));
+
       setState(() {
-        _gameAreas = {_gameArea};
+        _gameAreas.add(_gameArea);
       });
     }
   }

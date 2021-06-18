@@ -45,6 +45,10 @@ class _GameController extends State<Game> {
   @override
   void initState() {
     super.initState();
+
+    Socket socket = SocketService().getSocket();
+    socket.on('gameFinished', (data) => _finishGame(data));
+
     SchedulerBinding.instance.addPostFrameCallback((_) {
       setState(() {
         countdownEnd = loggedInPlayer.game.startAt
@@ -56,8 +60,29 @@ class _GameController extends State<Game> {
     });
   }
 
+  void _finishGame(data) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Het spel is afgelopen!"),
+            content: Text(data),
+            actions: [
+              TextButton(
+                child: Text("Ok"),
+                onPressed: () {
+                  _endGame();
+                },
+              )
+            ],
+          );
+        }).then((value){
+          _endGame();
+        });
+  }
+
   void _endGame() {
-    CronHelper().LocationSentCronJob.close();
+    CronHelper().locationSentCronJob.close();
     SocketService().getSocket().emit("leave_rooms");
     Navigator.of(context, rootNavigator: true)
         .pushReplacementNamed(Routes.Login);
