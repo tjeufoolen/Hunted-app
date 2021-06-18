@@ -47,7 +47,6 @@ class _GameController extends State<Game> {
     super.initState();
 
     Socket socket = SocketService().getSocket();
-    //TODO change 'on' depending on api
     socket.on('gameFinished', (data) => _finishGame(data));
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -62,7 +61,6 @@ class _GameController extends State<Game> {
   }
 
   void _finishGame(data) {
-    //TODO change depending on api
     showDialog(
         context: context,
         builder: (BuildContext context) {
