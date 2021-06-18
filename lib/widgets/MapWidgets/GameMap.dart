@@ -31,16 +31,20 @@ class _GameMapController extends State<GameMap> {
   Location _location = Location();
   SocketService _socketService = SocketService();
 
-  Map<int, GameLocation> _globalGameLocations = Map();
-  Map<int, GameLocation> _nearbyGameLocations = Map();
+  Map<String, GameLocation> _globalGameLocations = Map();
+  Map<String, GameLocation> _nearbyGameLocations = Map();
 
   Set<Marker> _markers = {};
   Set<Circle> _gameAreas = {};
   Circle _gameArea;
 
+  num _playerDistanceRadius = 200;
+
   bool _gameAreaDialogIsShowing = false;
   bool _socketOnIsSetUp = false;
   bool _startUpLocationsSetup = false;
+
+  Socket socket;
 
   // Only used for initial loading, will be replaced as soon as user location is fetched.
   LatLng _playerPosition = LatLng(51.6978162, 5.3036748);
@@ -50,15 +54,22 @@ class _GameMapController extends State<GameMap> {
     final Game currentGame = widget?.loggedInPlayer?.game;
 
     if (currentGame != null) {
+      _playerDistanceRadius = currentGame.distanceThiefPolice;
+
       _setGameArea(currentGame);
       if (!_startUpLocationsSetup) {
-        _setGameLocations(currentGame);
+        _globalGameLocations = Map.fromIterable(
+          currentGame.gameLocations,
+          key: (e) => e.id.toString() + "-" + e.locationType.toString(),
+          value: (e) => e,
+        );
+        _updateMarkers();
         _startUpLocationsSetup = true;
       }
     }
 
     if (!_socketOnIsSetUp) {
-      Socket socket = _socketService.getSocket();
+      socket = _socketService.getSocket();
 
       socket.on('locations', (data) {
         _onLocationsReceived(data, isNearby: false);
@@ -85,6 +96,12 @@ class _GameMapController extends State<GameMap> {
   }
 
   @override
+  void dispose() {
+    socket?.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
 
@@ -95,9 +112,9 @@ class _GameMapController extends State<GameMap> {
   }
 
   void _onLocationsReceived(locations, {isNearby = false}) {
-    Map<int, GameLocation> gameLocations = Map.fromIterable(
+    Map<String, GameLocation> gameLocations = Map.fromIterable(
       locations.toList().map((data) => GameLocation.fromJson(data)),
-      key: (e) => e.id,
+      key: (e) => e.id.toString() + "-" + e.locationType.toString(),
       value: (e) => e,
     );
 
@@ -107,20 +124,19 @@ class _GameMapController extends State<GameMap> {
       _globalGameLocations = gameLocations;
     }
 
-    _updatePlayerMarkers();
+    _updateMarkers();
   }
 
-  void _updatePlayerMarkers() {
+  void _updateMarkers() {
     // Merge global and nearby game locations together.
-    Map<int, GameLocation> gameLocations = {..._globalGameLocations};
+    Map<String, GameLocation> gameLocations = {..._globalGameLocations};
     _nearbyGameLocations.forEach((key, value) => gameLocations[key] = value);
-
-    // Remove own gameLocation from all
-    gameLocations.remove(widget.loggedInPlayer?.id);
 
     // Create/Replace markers and update view
     MarkerFactory().createAll(gameLocations.values.toList()).then((value) {
-      setState(() => _markers = value.toSet());
+      if (this.mounted) {
+        setState(() => _markers = value.toSet());
+      }
     });
   }
 
@@ -180,16 +196,18 @@ class _GameMapController extends State<GameMap> {
     _gameAreas
         .removeWhere((element) => element.circleId == CircleId(identifier));
 
-    setState(() {
-      _gameAreas.add(
-        Circle(
-            circleId: CircleId(identifier),
-            center: _playerPosition,
-            radius: 200, //TODO: <- CHANGE THIS TO VALUE FROM WEBPORTAL
-            fillColor: ColorHelper.nearbyPlayersCircleFill,
-            strokeWidth: 0),
-      );
-    });
+    if (mounted) {
+      setState(() {
+        _gameAreas.add(
+          Circle(
+              circleId: CircleId(identifier),
+              center: _playerPosition,
+              radius: _playerDistanceRadius.toDouble(),
+              fillColor: ColorHelper.nearbyPlayersCircleFill,
+              strokeWidth: 0),
+        );
+      });
+    }
   }
 
   void _triggerPlayerOutsideOfGame() {
@@ -213,16 +231,6 @@ class _GameMapController extends State<GameMap> {
               ],
             );
           });
-    }
-  }
-
-  void _setGameLocations(Game currentGame) {
-    if (currentGame?.gameLocations != null) {
-      MarkerFactory().createAll(currentGame.gameLocations).then((value) {
-        setState(() {
-          _markers = value.toSet();
-        });
-      });
     }
   }
 

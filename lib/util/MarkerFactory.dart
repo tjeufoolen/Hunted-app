@@ -11,7 +11,8 @@ class MarkerFactory {
 
   int _createCounter = 0;
 
-  Future<Marker> create(LocationType locationType, LatLng location, int id) async {
+  Future<Marker> create(
+      LocationType locationType, LatLng location, int id) async {
     var futureMarker;
 
     switch (locationType) {
@@ -37,7 +38,10 @@ class MarkerFactory {
   Future<List<Marker>> createAll(List<GameLocation> locations) async {
     return Stream.fromIterable(locations)
         .asyncMap((e) => this.create(
-            e.locationType, LatLng(e.location.latitude, e.location.longitude), e.id))
+              e.locationType,
+              LatLng(e.location.latitude, e.location.longitude),
+              e.id,
+            ))
         .toList();
   }
 
