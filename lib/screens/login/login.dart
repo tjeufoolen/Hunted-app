@@ -81,8 +81,8 @@ class _LoginController extends State<Login> {
       // The game has already started, navigate to game
       socketService.initializeSocket(
           joinedAsPlayer.game.id,
-          joinedAsPlayer
-              .playerRole); //TODO: second parameter is placeholder for when enums are available
+          joinedAsPlayer.playerRole,
+          joinedAsPlayer.id);
 
       CronHelper().initializeCron(joinedAsPlayer);
 
